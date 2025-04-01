@@ -66,28 +66,45 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
     
     ws.onopen = () => {
       console.log("WebSocket connection opened successfully");
+      console.log("WebSocket readyState:", ws.readyState);
+      console.log("WebSocket object properties:", Object.keys(ws));
       setIsConnected(true);
       setError(null);
     };
     
     ws.onclose = (event) => {
       console.log(`WebSocket connection closed. Code: ${event.code}, Reason: ${event.reason}`);
+      console.log("Close event details:", {
+        wasClean: event.wasClean,
+        code: event.code,
+        reason: event.reason,
+        type: event.type
+      });
       setIsConnected(false);
       setError("Mất kết nối với máy chủ. Vui lòng tải lại trang.");
       toast({
         variant: "destructive",
         title: "Mất kết nối",
-        description: "Mất kết nối với máy chủ. Vui lòng tải lại trang.",
+        description: `Mất kết nối với máy chủ. Mã lỗi: ${event.code}`,
       });
     };
     
     ws.onerror = (error) => {
       console.error("WebSocket connection error:", error);
+      console.error("Error type:", error.type);
+      console.error("Error target:", error.target);
+      
+      // Thử kết nối lại sau 3 giây
+      setTimeout(() => {
+        console.log("Đang thử kết nối lại...");
+        setupWebSocket();
+      }, 3000);
+      
       setError("Lỗi kết nối với máy chủ.");
       toast({
         variant: "destructive",
         title: "Lỗi kết nối",
-        description: "Lỗi kết nối với máy chủ.",
+        description: "Lỗi kết nối với máy chủ. Đang thử kết nối lại...",
       });
     };
     

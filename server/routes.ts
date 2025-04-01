@@ -75,6 +75,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // CORS middleware for Express
+  app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end();
+    }
+    
+    next();
+  });
+
   // Setup WebSocket Server (on a distinct path)
   console.log("Setting up WebSocket server on path: /ws");
   const wss = new WebSocketServer({ 
@@ -82,11 +97,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     path: '/ws',
     perMessageDeflate: false, // Disable per-message deflate to avoid compatibility issues
     clientTracking: true, // Enable client tracking
-    verifyClient: () => true // Accept all connections
+    // Detailed client verification for debugging
+    verifyClient: (info, callback) => {
+      console.log("WebSocket connection attempt from:", info.req.headers.origin);
+      console.log("With headers:", info.req.headers);
+      // Accept all connections
+      callback(true);
+    }
   });
 
-  wss.on('connection', (ws) => {
-    console.log("WebSocket connection established");
+  wss.on('connection', (ws, req) => {
+    console.log("WebSocket connection established from:", req.headers.origin);
+    console.log("Client IP:", req.socket.remoteAddress);
     let currentSessionCode: string | null = null;
     
     ws.on('error', (error) => {

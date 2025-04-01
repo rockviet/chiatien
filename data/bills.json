@@ -1,0 +1,21 @@
+{
+  "sessions": [
+    {
+      "id": 1,
+      "code": "D-HL7K",
+      "createdAt": "2025-04-01T06:40:55.299Z"
+    },
+    {
+      "id": 2,
+      "code": "VAUIKA",
+      "createdAt": "2025-04-01T06:42:19.720Z"
+    }
+  ],
+  "members": [],
+  "expenses": [],
+  "counters": {
+    "sessionId": 3,
+    "memberId": 1,
+    "expenseId": 1
+  }
+}

@@ -145,4 +145,7 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+import { FileStore } from './fileStore';
+
+// Sử dụng FileStore thay vì MemStorage để lưu trữ dữ liệu giữa các phiên làm việc
+export const storage = new FileStore('./data/bills.json');
