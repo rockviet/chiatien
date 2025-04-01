@@ -270,20 +270,26 @@ export function AddExpenseModal({
       // Tạo bản sao của customAmounts và cập nhật cho thành viên hiện tại
       const updatedAmounts = { ...prev.customAmounts, [memberId]: amount };
       
-      // Tìm thành viên chưa được chỉ định số tiền (chưa từng được nhập thủ công)
+      // Tìm tất cả thành viên đã được gán giá trị (bao gồm cả thành viên hiện tại)
+      const allAssignedMembers = [...manuallyAssignedMembers];
+      if (!allAssignedMembers.includes(memberId)) {
+        allAssignedMembers.push(memberId);
+      }
+      
+      // Tìm thành viên chưa được chỉ định số tiền
       const unassignedMembers = prev.participants.filter(id => 
-        !manuallyAssignedMembers.includes(id) && id !== memberId
+        !allAssignedMembers.includes(id)
       );
       
-      // Tính tổng số tiền đã được chỉ định (chỉ tính những thành viên đã nhập thủ công và thành viên hiện tại)
+      // Tính tổng số tiền đã được chỉ định 
       let assignedTotal = 0;
-      [...manuallyAssignedMembers, memberId].forEach(id => {
+      allAssignedMembers.forEach(id => {
         if (updatedAmounts[id] !== undefined && prev.participants.includes(id)) {
           assignedTotal += updatedAmounts[id];
         }
       });
       
-      // Số tiền còn lại cần chia
+      // Số tiền còn lại cần chia đều cho các thành viên chưa được chỉ định
       const remainingAmount = totalExpense - assignedTotal;
       
       // Nếu còn số tiền để chia và có thành viên chưa được chỉ định

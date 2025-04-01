@@ -84,6 +84,16 @@
       "id": 17,
       "code": "HLPL9V",
       "createdAt": "2025-04-01T09:28:31.124Z"
+    },
+    {
+      "id": 18,
+      "code": "CSYW5P",
+      "createdAt": "2025-04-01T09:31:51.103Z"
+    },
+    {
+      "id": 19,
+      "code": "N0QJZ4",
+      "createdAt": "2025-04-01T09:31:54.562Z"
     }
   ],
   "members": [
@@ -151,6 +161,26 @@
       "id": 13,
       "name": "d",
       "sessionId": 15
+    },
+    {
+      "id": 14,
+      "name": "A",
+      "sessionId": 17
+    },
+    {
+      "id": 15,
+      "name": "B",
+      "sessionId": 17
+    },
+    {
+      "id": 16,
+      "name": "C",
+      "sessionId": 17
+    },
+    {
+      "id": 17,
+      "name": "D",
+      "sessionId": 17
     }
   ],
   "expenses": [
@@ -173,8 +203,8 @@
     }
   ],
   "counters": {
-    "sessionId": 18,
-    "memberId": 14,
+    "sessionId": 20,
+    "memberId": 18,
     "expenseId": 2
   }
 }
