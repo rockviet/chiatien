@@ -150,8 +150,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             const schema = z.object({
               sessionId: z.number(),
-              name: z.string().min(1),
-              slots: z.number().optional().default(1)
+              name: z.string().min(1)
             });
             
             const result = schema.safeParse(data.payload);
@@ -176,8 +175,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             const schema = z.object({
               id: z.number(),
-              name: z.string().min(1),
-              slots: z.number().optional()
+              name: z.string().min(1)
             });
             
             const result = schema.safeParse(data.payload);
@@ -189,11 +187,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               break;
             }
             
-            const member = await storage.updateMember(
-              result.data.id, 
-              result.data.name, 
-              result.data.slots
-            );
+            const member = await storage.updateMember(result.data.id, result.data.name);
             if (!member) {
               ws.send(JSON.stringify({
                 type: MessageType.ERROR,

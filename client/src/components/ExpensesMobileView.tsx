@@ -114,7 +114,7 @@ export function ExpensesMobileView() {
                             className="inline-block w-3 h-3 rounded-full mr-1.5"
                             style={{ backgroundColor: getMemberColor(payer.id) }}
                           ></span>
-                          {payer.name} {payer.slots > 1 ? `(${payer.slots})` : ''}
+                          {payer.name}
                         </span>
                       )}
                     </div>
@@ -142,7 +142,7 @@ export function ExpensesMobileView() {
                                   className="inline-block w-3 h-3 rounded-full mr-1.5"
                                   style={{ backgroundColor: getMemberColor(member.id) }}
                                 ></span>
-                                {member.name} {member.slots > 1 ? `(${member.slots})` : ''}
+                                {member.name}
                               </span>
                               <span className={`${expense.isCustomSplit ? 'text-primary font-medium' : ''}`}>
                                 {amount}k

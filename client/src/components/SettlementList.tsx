@@ -32,7 +32,7 @@ export function SettlementList() {
                     className="inline-block w-3 h-3 rounded-full mr-1.5"
                     style={{ backgroundColor: getMemberColor(fromMember.id) }}
                   ></span>
-                  {fromMember.name} {fromMember.slots > 1 ? `(${fromMember.slots})` : ''}
+                  {fromMember.name}
                 </span>
                 <ArrowRight className="mx-2 text-gray-500 h-4 w-4" />
                 <span className="flex items-center text-xs font-medium">
@@ -40,7 +40,7 @@ export function SettlementList() {
                     className="inline-block w-3 h-3 rounded-full mr-1.5"
                     style={{ backgroundColor: getMemberColor(toMember.id) }}
                   ></span>
-                  {toMember.name} {toMember.slots > 1 ? `(${toMember.slots})` : ''}
+                  {toMember.name}
                 </span>
               </div>
               <span className="text-right font-medium">{settlement.amount} nghìn VNĐ</span>

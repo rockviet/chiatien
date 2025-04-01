@@ -104,7 +104,7 @@ export function ExpensesTable() {
                           className="inline-block w-3 h-3 rounded-full mr-1.5"
                           style={{ backgroundColor: color }}
                         ></span>
-                        {member.name} {member.slots > 1 ? `(${member.slots})` : ''}
+                        {member.name}
                       </span>
                     </th>
                   );
@@ -157,7 +157,7 @@ export function ExpensesTable() {
                               className="inline-block w-3 h-3 rounded-full mr-1.5"
                               style={{ backgroundColor: getMemberColor(payer.id) }}
                             ></span>
-                            {payer.name} {payer.slots > 1 ? `(${payer.slots})` : ''}
+                            {payer.name}
                           </span>
                         )}
                       </td>

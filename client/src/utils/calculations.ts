@@ -47,17 +47,10 @@ export function calculateBalances(members: Member[], expenses: Expense[]): Membe
         balances[participantId] -= customAmount;
       });
     } else {
-      // Split the expense evenly among participants, considering slots
-      const totalSlots = participants.reduce((total, participantId) => {
-        const member = members.find(m => m.id === participantId);
-        return total + (member ? member.slots : 1);
-      }, 0);
-      
+      // Split the expense evenly among participants
+      const sharePerPerson = amount / participants.length;
       participants.forEach(participantId => {
-        const member = members.find(m => m.id === participantId);
-        const memberSlots = member ? member.slots : 1;
-        const shareForMember = amount * (memberSlots / totalSlots);
-        balances[participantId] -= shareForMember;
+        balances[participantId] -= sharePerPerson;
       });
     }
   });
@@ -155,7 +148,7 @@ export function calculateExpenseSummary(expenses: Expense[]): ExpenseSummary {
 }
 
 // Get member split amount for an expense
-export function getMemberSplitAmount(expense: Expense, memberId: number, members: Member[]): number {
+export function getMemberSplitAmount(expense: Expense, memberId: number): number {
   if (!expense.participants.includes(memberId)) {
     return 0;
   }
@@ -164,14 +157,5 @@ export function getMemberSplitAmount(expense: Expense, memberId: number, members
     return expense.customAmounts[memberId];
   }
   
-  // Calculate equal split considering slots
-  const totalSlots = expense.participants.reduce((total, participantId) => {
-    const member = members.find(m => m.id === participantId);
-    return total + (member ? member.slots : 1);
-  }, 0);
-  
-  const member = members.find(m => m.id === memberId);
-  const memberSlots = member ? member.slots : 1;
-  
-  return Math.round(expense.amount * (memberSlots / totalSlots));
+  return Math.round(expense.amount / expense.participants.length);
 }

@@ -20,21 +20,21 @@ export function MembersList() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [selectedMember, setSelectedMember] = useState<{ id: number, name: string, slots: number } | null>(null);
+  const [selectedMember, setSelectedMember] = useState<{ id: number, name: string } | null>(null);
 
-  const handleEditClick = (id: number, name: string, slots: number) => {
-    setSelectedMember({ id, name, slots });
+  const handleEditClick = (id: number, name: string) => {
+    setSelectedMember({ id, name });
     setShowEditModal(true);
   };
 
-  const handleDeleteClick = (id: number, name: string, slots: number) => {
-    setSelectedMember({ id, name, slots });
+  const handleDeleteClick = (id: number, name: string) => {
+    setSelectedMember({ id, name });
     setShowDeleteDialog(true);
   };
 
-  const handleEditSubmit = (name: string, slots: number) => {
+  const handleEditSubmit = (name: string) => {
     if (selectedMember) {
-      updateMember(selectedMember.id, name, slots);
+      updateMember(selectedMember.id, name);
       setShowEditModal(false);
     }
   };
@@ -75,21 +75,16 @@ export function MembersList() {
                       style={{ backgroundColor: getMemberColor(member.id) }}
                     ></span>
                     {member.name}
-                    {member.slots > 1 && (
-                      <span className="ml-1 text-xs text-gray-500 bg-gray-100 px-1.5 rounded-full">
-                        {member.slots}
-                      </span>
-                    )}
                   </span>
                   <button 
-                    onClick={() => handleEditClick(member.id, member.name, member.slots)}
+                    onClick={() => handleEditClick(member.id, member.name)}
                     className="text-gray-500 hover:text-primary"
                     aria-label="Sửa thành viên"
                   >
                     <Pencil size={16} />
                   </button>
                   <button 
-                    onClick={() => handleDeleteClick(member.id, member.name, member.slots)}
+                    onClick={() => handleDeleteClick(member.id, member.name)}
                     className="text-gray-500 hover:text-danger ml-1"
                     aria-label="Xóa thành viên"
                   >
@@ -115,7 +110,6 @@ export function MembersList() {
         onClose={() => setShowEditModal(false)} 
         mode="edit"
         initialName={selectedMember?.name || ''}
-        initialSlots={selectedMember?.slots || 1}
         onSubmit={handleEditSubmit}
       />
 
