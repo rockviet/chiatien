@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useSession } from '@/context/SessionContext';
 import { useSessionData } from '@/hooks/useSessionData';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Plus, Pencil, Trash2, SplitSquareHorizontal } from 'lucide-react';
 import { AddExpenseModal } from './AddExpenseModal';
+import { ExpensesMobileView } from './ExpensesMobileView';
 import { Expense } from '@shared/schema';
 import {
   AlertDialog,
@@ -21,10 +23,16 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 export function ExpensesTable() {
   const { members, expenses, deleteExpense } = useSession();
   const { getMemberById, getMemberSplitAmounts } = useSessionData();
+  const isMobile = useIsMobile();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+
+  // Nếu là mobile, hiển thị giao diện dành cho mobile
+  if (isMobile) {
+    return <ExpensesMobileView />;
+  }
 
   const handleEditClick = (expense: Expense) => {
     setSelectedExpense(expense);

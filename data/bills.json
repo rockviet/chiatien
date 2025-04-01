@@ -19,12 +19,22 @@
       "id": 4,
       "code": "ZDKHFB",
       "createdAt": "2025-04-01T08:09:09.676Z"
+    },
+    {
+      "id": 5,
+      "code": "N4SOQC",
+      "createdAt": "2025-04-01T08:14:24.295Z"
+    },
+    {
+      "id": 6,
+      "code": "FOXHY7",
+      "createdAt": "2025-04-01T08:14:27.914Z"
     }
   ],
   "members": [],
   "expenses": [],
   "counters": {
-    "sessionId": 5,
+    "sessionId": 7,
     "memberId": 1,
     "expenseId": 1
   }
