@@ -99,6 +99,11 @@
       "id": 20,
       "code": "C7F4QP",
       "createdAt": "2025-04-01T10:23:30.458Z"
+    },
+    {
+      "id": 21,
+      "code": "LOPTOL",
+      "createdAt": "2025-04-01T10:25:31.884Z"
     }
   ],
   "members": [
@@ -208,7 +213,7 @@
     }
   ],
   "counters": {
-    "sessionId": 21,
+    "sessionId": 22,
     "memberId": 18,
     "expenseId": 2
   }
