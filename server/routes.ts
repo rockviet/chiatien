@@ -77,7 +77,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Setup WebSocket Server (on a distinct path)
   console.log("Setting up WebSocket server on path: /ws");
-  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  const wss = new WebSocketServer({ 
+    server: httpServer, 
+    path: '/ws',
+    perMessageDeflate: false, // Disable per-message deflate to avoid compatibility issues
+    clientTracking: true, // Enable client tracking
+    verifyClient: () => true // Accept all connections
+  });
 
   wss.on('connection', (ws) => {
     console.log("WebSocket connection established");

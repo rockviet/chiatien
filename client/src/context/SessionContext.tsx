@@ -53,11 +53,16 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, []);
 
   const setupWebSocket = () => {
+    // Tạo URL cho kết nối WebSocket dựa trên giao thức hiện tại
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    // Sử dụng window.location.host để lấy cả hostname và port
+    const host = window.location.host;
+    const wsUrl = `${protocol}//${host}/ws`;
     
-    console.log(`Connecting to WebSocket at: ${wsUrl}`);
+    console.log(`Đang kết nối tới WebSocket tại: ${wsUrl}`);
+    
     const ws = new WebSocket(wsUrl);
+    console.log("Đối tượng WebSocket đã được tạo:", ws);
     
     ws.onopen = () => {
       console.log("WebSocket connection opened successfully");
