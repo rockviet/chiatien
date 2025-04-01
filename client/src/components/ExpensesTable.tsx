@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useSession } from '@/context/SessionContext';
 import { useSessionData } from '@/hooks/useSessionData';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useResponsive } from '@/hooks/use-responsive';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Plus, Pencil, Trash2, SplitSquareHorizontal } from 'lucide-react';
@@ -23,14 +23,14 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 export function ExpensesTable() {
   const { members, expenses, deleteExpense } = useSession();
   const { getMemberById, getMemberSplitAmounts } = useSessionData();
-  const isMobile = useIsMobile();
+  const { isMobileOrTablet } = useResponsive();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
 
-  // Nếu là mobile, hiển thị giao diện dành cho mobile
-  if (isMobile) {
+  // Nếu là mobile hoặc tablet, hiển thị giao diện dành cho thiết bị nhỏ
+  if (isMobileOrTablet) {
     return <ExpensesMobileView />;
   }
 

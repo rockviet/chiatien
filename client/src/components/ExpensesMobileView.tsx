@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useSession } from '@/context/SessionContext';
 import { useSessionData } from '@/hooks/useSessionData';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useResponsive } from '@/hooks/use-responsive';
 import { Button } from '@/components/ui/button';
 import { Plus, Pencil, Trash2, SplitSquareHorizontal, ChevronDown, ChevronUp } from 'lucide-react';
 import { AddExpenseModal } from './AddExpenseModal';

@@ -29,13 +29,67 @@
       "id": 6,
       "code": "FOXHY7",
       "createdAt": "2025-04-01T08:14:27.914Z"
+    },
+    {
+      "id": 7,
+      "code": "N0HNA0",
+      "createdAt": "2025-04-01T08:24:13.542Z"
+    },
+    {
+      "id": 8,
+      "code": "QY4S3U",
+      "createdAt": "2025-04-01T08:24:13.551Z"
     }
   ],
-  "members": [],
-  "expenses": [],
+  "members": [
+    {
+      "id": 1,
+      "name": "Thảo",
+      "sessionId": 6
+    },
+    {
+      "id": 2,
+      "name": "Việt",
+      "sessionId": 6
+    },
+    {
+      "id": 3,
+      "name": "Tân",
+      "sessionId": 6
+    },
+    {
+      "id": 4,
+      "name": "Hải",
+      "sessionId": 6
+    },
+    {
+      "id": 5,
+      "name": "Quang",
+      "sessionId": 6
+    }
+  ],
+  "expenses": [
+    {
+      "id": 1,
+      "name": "Ăn sáng",
+      "sessionId": 6,
+      "amount": 60,
+      "payerId": 2,
+      "participants": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "customAmounts": {},
+      "isCustomSplit": false,
+      "createdAt": "2025-04-01T08:16:14.868Z"
+    }
+  ],
   "counters": {
-    "sessionId": 7,
-    "memberId": 1,
-    "expenseId": 1
+    "sessionId": 9,
+    "memberId": 6,
+    "expenseId": 2
   }
 }
