@@ -44,6 +44,11 @@
       "id": 9,
       "code": "7QMRKT",
       "createdAt": "2025-04-01T08:28:01.995Z"
+    },
+    {
+      "id": 10,
+      "code": "AV_F-R",
+      "createdAt": "2025-04-01T08:35:30.781Z"
     }
   ],
   "members": [
@@ -93,7 +98,7 @@
     }
   ],
   "counters": {
-    "sessionId": 10,
+    "sessionId": 11,
     "memberId": 6,
     "expenseId": 2
   }

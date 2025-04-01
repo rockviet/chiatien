@@ -1,6 +1,7 @@
 import { useSession } from '@/context/SessionContext';
 import { useSessionData } from '@/hooks/useSessionData';
 import { ArrowRight } from 'lucide-react';
+import { getMemberColor, getContrastTextColor } from '@/utils/colors';
 
 export function SettlementList() {
   const { members } = useSession();
@@ -26,9 +27,25 @@ export function SettlementList() {
           return (
             <li key={index} className="py-3 flex items-center justify-between">
               <div className="flex items-center">
-                <span className="font-medium">{fromMember.name}</span>
+                <span 
+                  className="font-medium px-2 py-0.5 rounded-full text-xs"
+                  style={{ 
+                    backgroundColor: getMemberColor(fromMember.id),
+                    color: getContrastTextColor(getMemberColor(fromMember.id))
+                  }}
+                >
+                  {fromMember.name}
+                </span>
                 <ArrowRight className="mx-2 text-gray-500 h-4 w-4" />
-                <span className="font-medium">{toMember.name}</span>
+                <span 
+                  className="font-medium px-2 py-0.5 rounded-full text-xs"
+                  style={{ 
+                    backgroundColor: getMemberColor(toMember.id),
+                    color: getContrastTextColor(getMemberColor(toMember.id))
+                  }}
+                >
+                  {toMember.name}
+                </span>
               </div>
               <span className="text-right font-medium">{settlement.amount} nghìn VNĐ</span>
             </li>

@@ -1,11 +1,14 @@
 import { useEffect, useRef } from 'react';
+import { useSession } from '@/context/SessionContext';
 import { useSessionData } from '@/hooks/useSessionData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Chart, ChartConfiguration, ChartData, registerables } from 'chart.js';
+import { memberColors } from '@/utils/colors';
 
 Chart.register(...registerables);
 
 export function ExpenseChart() {
+  const { members } = useSession();
   const { summary } = useSessionData();
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstance = useRef<Chart | null>(null);
@@ -53,14 +56,9 @@ export function ExpenseChart() {
       labels: categoryData.map(cat => cat.name),
       datasets: [{
         data: categoryData.map(cat => cat.amount),
-        backgroundColor: [
-          '#3B82F6',
-          '#10B981',
-          '#F59E0B',
-          '#EF4444',
-          '#8B5CF6',
-          '#EC4899'
-        ]
+        backgroundColor: categoryData.map((_, index) => 
+          memberColors[index % memberColors.length]
+        )
       }]
     };
     

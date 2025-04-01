@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useSession } from '@/context/SessionContext';
 import { useSessionData } from '@/hooks/useSessionData';
 import { useResponsive } from '@/hooks/use-responsive';
-import { ExportMenu } from './ExportMenu';
+import { getMemberColor, getContrastTextColor } from '@/utils/colors';
 import { Button } from '@/components/ui/button';
 import { Plus, Pencil, Trash2, SplitSquareHorizontal, ChevronDown, ChevronUp } from 'lucide-react';
 import { AddExpenseModal } from './AddExpenseModal';
@@ -65,17 +65,14 @@ export function ExpensesMobileView() {
     <>
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-semibold">Chi tiêu</h2>
-        <div className="flex items-center gap-2">
-          <ExportMenu />
-          <Button 
-            onClick={() => setShowAddModal(true)}
-            className="bg-primary text-white hover:bg-blue-600 flex items-center"
-            size="sm"
-            disabled={members.length === 0}
-          >
-            <Plus className="mr-1 h-4 w-4" /> Thêm
-          </Button>
-        </div>
+        <Button 
+          onClick={() => setShowAddModal(true)}
+          className="bg-primary text-white hover:bg-blue-600 flex items-center"
+          size="sm"
+          disabled={members.length === 0}
+        >
+          <Plus className="mr-1 h-4 w-4" /> Thêm
+        </Button>
       </div>
       
       {expenses.length === 0 ? (
@@ -109,7 +106,20 @@ export function ExpensesMobileView() {
                     </div>
                   </div>
                   <CardDescription className="flex justify-between mt-1 text-sm">
-                    <span>Người trả: {payer?.name}</span>
+                    <div>
+                      <span>Người trả: </span>
+                      {payer && (
+                        <span 
+                          className="px-2 py-1 rounded-full text-xs font-medium ml-1" 
+                          style={{ 
+                            backgroundColor: getMemberColor(payer.id),
+                            color: getContrastTextColor(getMemberColor(payer.id))
+                          }}
+                        >
+                          {payer.name}
+                        </span>
+                      )}
+                    </div>
                     <span>{participantCount} người tham gia</span>
                   </CardDescription>
                 </CardHeader>
@@ -129,7 +139,15 @@ export function ExpensesMobileView() {
                           
                           return (
                             <div key={member.id} className="flex justify-between text-sm py-1">
-                              <span>{member.name}</span>
+                              <span 
+                                className="px-2 py-0.5 rounded-full text-xs font-medium" 
+                                style={{ 
+                                  backgroundColor: getMemberColor(member.id),
+                                  color: getContrastTextColor(getMemberColor(member.id))
+                                }}
+                              >
+                                {member.name}
+                              </span>
                               <span className={`${expense.isCustomSplit ? 'text-primary font-medium' : ''}`}>
                                 {amount}k
                               </span>

@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { useSession } from '@/context/SessionContext';
 import { useSessionData } from '@/hooks/useSessionData';
 import { useResponsive } from '@/hooks/use-responsive';
+import { getMemberColor, getContrastTextColor } from '@/utils/colors';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Plus, Pencil, Trash2, SplitSquareHorizontal } from 'lucide-react';
 import { AddExpenseModal } from './AddExpenseModal';
 import { ExpensesMobileView } from './ExpensesMobileView';
-import { ExportMenu } from './ExportMenu';
 import { Expense } from '@shared/schema';
 import {
   AlertDialog,
@@ -71,17 +71,14 @@ export function ExpensesTable() {
     <>
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-semibold">Chi tiêu</h2>
-        <div className="flex items-center gap-2">
-          <ExportMenu />
-          <Button 
-            onClick={() => setShowAddModal(true)}
-            className="bg-primary text-white hover:bg-blue-600 flex items-center"
-            size="sm"
-            disabled={members.length === 0}
-          >
-            <Plus className="mr-1 h-4 w-4" /> Thêm chi tiêu
-          </Button>
-        </div>
+        <Button 
+          onClick={() => setShowAddModal(true)}
+          className="bg-primary text-white hover:bg-blue-600 flex items-center"
+          size="sm"
+          disabled={members.length === 0}
+        >
+          <Plus className="mr-1 h-4 w-4" /> Thêm chi tiêu
+        </Button>
       </div>
       
       <div className="bg-white rounded-lg shadow overflow-hidden mb-6">
@@ -98,11 +95,22 @@ export function ExpensesTable() {
                 <th scope="col" className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Người trả
                 </th>
-                {members.map(member => (
-                  <th key={member.id} scope="col" className="py-3 px-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {member.name}
-                  </th>
-                ))}
+                {members.map(member => {
+                  const color = getMemberColor(member.id);
+                  return (
+                    <th key={member.id} scope="col" className="py-3 px-4 text-center text-xs font-medium uppercase tracking-wider">
+                      <span 
+                        className="px-2 py-1 rounded-full inline-block w-full" 
+                        style={{ 
+                          backgroundColor: color,
+                          color: getContrastTextColor(color)
+                        }}
+                      >
+                        {member.name}
+                      </span>
+                    </th>
+                  );
+                })}
                 <th scope="col" className="py-3 px-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Thao tác
                 </th>
@@ -144,7 +152,19 @@ export function ExpensesTable() {
                         </div>
                       </td>
                       <td className="py-3 px-4 text-sm">{expense.amount}</td>
-                      <td className="py-3 px-4 text-sm">{payer?.name}</td>
+                      <td className="py-3 px-4 text-sm">
+                        {payer && (
+                          <span 
+                            className="px-2 py-1 rounded-full text-xs font-medium" 
+                            style={{ 
+                              backgroundColor: getMemberColor(payer.id),
+                              color: getContrastTextColor(getMemberColor(payer.id))
+                            }}
+                          >
+                            {payer.name}
+                          </span>
+                        )}
+                      </td>
                       
                       {members.map(member => (
                         <td key={member.id} className="py-3 px-4 text-sm text-center">

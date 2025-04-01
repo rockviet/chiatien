@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useSession } from '@/context/SessionContext';
 import { Button } from '@/components/ui/button';
 import { Pencil, Trash2, UserPlus } from 'lucide-react';
+import { getMemberColor, getContrastTextColor } from '@/utils/colors';
 import { AddMemberModal } from './AddMemberModal';
 import { 
   AlertDialog,
@@ -67,8 +68,20 @@ export function MembersList() {
               </div>
             ) : (
               members.map(member => (
-                <div key={member.id} className="flex items-center bg-gray-100 px-3 py-1.5 rounded-md">
-                  <span className="font-medium mr-2">{member.name}</span>
+                <div key={member.id} className="flex items-center px-3 py-1.5 rounded-md"
+                  style={{ 
+                    backgroundColor: getMemberColor(member.id) + '20' // Add 20% opacity
+                  }}
+                >
+                  <span 
+                    className="font-medium mr-2 px-2 py-0.5 rounded-full"
+                    style={{ 
+                      backgroundColor: getMemberColor(member.id),
+                      color: getContrastTextColor(getMemberColor(member.id))
+                    }}
+                  >
+                    {member.name}
+                  </span>
                   <button 
                     onClick={() => handleEditClick(member.id, member.name)}
                     className="text-gray-500 hover:text-primary"
