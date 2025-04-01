@@ -51,9 +51,15 @@ export function AddExpenseModal({
     participants: '',
     customAmounts: ''
   });
+  
+  // Mảng lưu trữ các thành viên đã được nhập giá trị tùy chỉnh
+  const [manuallyAssignedMembers, setManuallyAssignedMembers] = useState<number[]>([]);
 
   useEffect(() => {
     if (isOpen) {
+      // Reset manually assigned members array when opening form
+      setManuallyAssignedMembers([]);
+      
       if (mode === 'edit' && expense) {
         setFormData({
           name: expense.name,
@@ -64,6 +70,13 @@ export function AddExpenseModal({
           customAmounts: expense.customAmounts || {},
           tip: ''
         });
+        
+        // Khi chỉnh sửa, thêm tất cả thành viên đã có giá trị tùy chỉnh vào mảng
+        if (expense.isCustomSplit && expense.customAmounts) {
+          const assignedMembers = 
+            Object.keys(expense.customAmounts).map(id => parseInt(id, 10));
+          setManuallyAssignedMembers(assignedMembers);
+        }
       } else {
         setFormData({
           name: '',
@@ -242,6 +255,14 @@ export function AddExpenseModal({
   const handleCustomAmountChange = (memberId: number, value: string) => {
     const amount = parseInt(value, 10) || 0;
     
+    // Đánh dấu thành viên này đã được nhập tùy chỉnh
+    setManuallyAssignedMembers(prev => {
+      if (!prev.includes(memberId)) {
+        return [...prev, memberId];
+      }
+      return prev;
+    });
+    
     setFormData(prev => {
       // Lấy tổng số tiền chi tiêu
       const totalExpense = parseFloat(prev.amount) || 0;
@@ -249,16 +270,18 @@ export function AddExpenseModal({
       // Tạo bản sao của customAmounts và cập nhật cho thành viên hiện tại
       const updatedAmounts = { ...prev.customAmounts, [memberId]: amount };
       
-      // Lấy danh sách thành viên đã được chỉ định số tiền
-      const membersWithAmount = Object.keys(updatedAmounts).map(id => parseInt(id, 10));
-      
-      // Tìm thành viên chưa được chỉ định số tiền (số tiền = 0 cũng được tính là đã chỉ định)
+      // Tìm thành viên chưa được chỉ định số tiền (chưa từng được nhập thủ công)
       const unassignedMembers = prev.participants.filter(id => 
-        !membersWithAmount.includes(id) || updatedAmounts[id] === 0
+        !manuallyAssignedMembers.includes(id) && id !== memberId
       );
       
-      // Tính tổng số tiền đã được chỉ định
-      const assignedTotal = Object.values(updatedAmounts).reduce((sum, val) => sum + val, 0);
+      // Tính tổng số tiền đã được chỉ định (chỉ tính những thành viên đã nhập thủ công và thành viên hiện tại)
+      let assignedTotal = 0;
+      [...manuallyAssignedMembers, memberId].forEach(id => {
+        if (updatedAmounts[id] !== undefined && prev.participants.includes(id)) {
+          assignedTotal += updatedAmounts[id];
+        }
+      });
       
       // Số tiền còn lại cần chia
       const remainingAmount = totalExpense - assignedTotal;
@@ -278,6 +301,11 @@ export function AddExpenseModal({
           if (extra > 0) remainder -= 1;
           
           updatedAmounts[id] = amountPerMember + extra;
+        });
+      } else if (remainingAmount <= 0) {
+        // Nếu đã chỉ định hết hoặc quá số tiền, gán 0 cho tất cả thành viên còn lại
+        unassignedMembers.forEach(id => {
+          updatedAmounts[id] = 0;
         });
       }
       

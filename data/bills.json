@@ -74,6 +74,16 @@
       "id": 15,
       "code": "VOPIG1",
       "createdAt": "2025-04-01T09:17:25.013Z"
+    },
+    {
+      "id": 16,
+      "code": "ZSY0NK",
+      "createdAt": "2025-04-01T09:28:27.468Z"
+    },
+    {
+      "id": 17,
+      "code": "HLPL9V",
+      "createdAt": "2025-04-01T09:28:31.124Z"
     }
   ],
   "members": [
@@ -121,6 +131,26 @@
       "id": 9,
       "name": "Tân",
       "sessionId": 13
+    },
+    {
+      "id": 10,
+      "name": "a",
+      "sessionId": 15
+    },
+    {
+      "id": 11,
+      "name": "b",
+      "sessionId": 15
+    },
+    {
+      "id": 12,
+      "name": "c",
+      "sessionId": 15
+    },
+    {
+      "id": 13,
+      "name": "d",
+      "sessionId": 15
     }
   ],
   "expenses": [
@@ -143,8 +173,8 @@
     }
   ],
   "counters": {
-    "sessionId": 16,
-    "memberId": 10,
+    "sessionId": 18,
+    "memberId": 14,
     "expenseId": 2
   }
 }
