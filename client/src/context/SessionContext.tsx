@@ -12,8 +12,8 @@ interface SessionContextType {
   sendMessage: (message: WebSocketMessage) => void;
   joinSession: (code: string) => void;
   createSession: () => void;
-  addMember: (name: string) => void;
-  updateMember: (id: number, name: string) => void;
+  addMember: (name: string, slots?: number) => void;
+  updateMember: (id: number, name: string, slots?: number) => void;
   deleteMember: (id: number) => void;
   addExpense: (data: { 
     name: string; 
@@ -313,24 +313,26 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
       });
   };
 
-  const addMember = (name: string) => {
+  const addMember = (name: string, slots: number = 1) => {
     if (!sessionId) return;
     
     sendMessage({
       type: MessageType.MEMBER_ADDED,
       payload: {
         sessionId,
-        name
+        name,
+        slots
       }
     });
   };
 
-  const updateMember = (id: number, name: string) => {
+  const updateMember = (id: number, name: string, slots?: number) => {
     sendMessage({
       type: MessageType.MEMBER_UPDATED,
       payload: {
         id,
-        name
+        name,
+        ...(slots !== undefined ? { slots } : {})
       }
     });
   };

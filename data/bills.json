@@ -181,6 +181,26 @@
       "id": 17,
       "name": "D",
       "sessionId": 17
+    },
+    {
+      "id": 18,
+      "name": "A",
+      "sessionId": 19
+    },
+    {
+      "id": 19,
+      "name": "B",
+      "sessionId": 19
+    },
+    {
+      "id": 20,
+      "name": "C",
+      "sessionId": 19
+    },
+    {
+      "id": 21,
+      "name": "D",
+      "sessionId": 19
     }
   ],
   "expenses": [
@@ -200,11 +220,32 @@
       "customAmounts": {},
       "isCustomSplit": false,
       "createdAt": "2025-04-01T08:16:14.868Z"
+    },
+    {
+      "id": 2,
+      "name": "HIHI",
+      "sessionId": 19,
+      "amount": 900,
+      "payerId": 18,
+      "participants": [
+        18,
+        19,
+        20,
+        21
+      ],
+      "customAmounts": {
+        "18": 100,
+        "19": 80,
+        "20": 360,
+        "21": 360
+      },
+      "isCustomSplit": true,
+      "createdAt": "2025-04-01T09:33:25.911Z"
     }
   ],
   "counters": {
     "sessionId": 20,
-    "memberId": 18,
-    "expenseId": 2
+    "memberId": 22,
+    "expenseId": 3
   }
 }

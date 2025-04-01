@@ -13,7 +13,7 @@ export interface IStorage {
   getMembers(sessionId: number): Promise<Member[]>;
   getMember(id: number): Promise<Member | undefined>;
   createMember(member: InsertMember): Promise<Member>;
-  updateMember(id: number, name: string): Promise<Member | undefined>;
+  updateMember(id: number, name: string, slots?: number): Promise<Member | undefined>;
   deleteMember(id: number): Promise<boolean>;
 
   // Expense methods
@@ -74,16 +74,25 @@ export class MemStorage implements IStorage {
 
   async createMember(member: InsertMember): Promise<Member> {
     const id = this.memberIdCounter++;
-    const newMember: Member = { ...member, id };
+    // Ensure slots is always set with a default of 1
+    const newMember: Member = { 
+      ...member, 
+      id,
+      slots: member.slots ?? 1 
+    };
     this.members.set(id, newMember);
     return newMember;
   }
 
-  async updateMember(id: number, name: string): Promise<Member | undefined> {
+  async updateMember(id: number, name: string, slots?: number): Promise<Member | undefined> {
     const member = this.members.get(id);
     if (!member) return undefined;
     
-    const updatedMember = { ...member, name };
+    const updatedMember = { 
+      ...member, 
+      name,
+      ...(slots !== undefined ? { slots } : {})
+    };
     this.members.set(id, updatedMember);
     return updatedMember;
   }

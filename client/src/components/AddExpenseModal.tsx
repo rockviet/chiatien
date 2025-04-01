@@ -194,14 +194,21 @@ export function AddExpenseModal({
     setFormData(prev => {
       const allParticipants = members.map(member => member.id);
       
-      // Update custom amounts if using custom split
+      // Update custom amounts if using custom split, considering slots
       let customAmounts = { ...prev.customAmounts };
       if (prev.isCustomSplit) {
         const totalAmount = parseFloat(prev.amount) || 0;
-        const equalAmount = Math.round(totalAmount / allParticipants.length);
         
+        // Tính tổng số slots
+        const totalSlots = members.reduce((total, member) => {
+          return total + (member.slots || 1);
+        }, 0);
+        
+        // Phân chia theo slots
         customAmounts = allParticipants.reduce((acc, id) => {
-          acc[id] = equalAmount;
+          const member = members.find(m => m.id === id);
+          const memberSlots = member ? member.slots || 1 : 1;
+          acc[id] = Math.round(totalAmount * (memberSlots / totalSlots));
           return acc;
         }, {} as Record<number, number>);
       }
@@ -224,12 +231,22 @@ export function AddExpenseModal({
       let customAmounts = {};
       
       if (checked) {
-        // Khi bật tính năng tự chia tiền, mặc định để tất cả đều chia đều
+        // Khi bật tính năng tự chia tiền, phân chia theo số slots của mỗi thành viên
         const totalAmount = parseFloat(prev.amount) || 0;
-        const equalAmount = Math.round(totalAmount / prev.participants.length);
         
+        // Tính tổng số slots của tất cả người tham gia
+        const totalSlots = prev.participants.reduce((total, id) => {
+          const member = members.find(m => m.id === id);
+          return total + (member ? member.slots || 1 : 1);
+        }, 0);
+        
+        // Phân chia số tiền theo tỷ lệ slots
         customAmounts = prev.participants.reduce((acc, id) => {
-          acc[id] = equalAmount;
+          const member = members.find(m => m.id === id);
+          const memberSlots = member ? member.slots || 1 : 1;
+          
+          // Phân chia tiền theo tỷ lệ slots
+          acc[id] = Math.round(totalAmount * (memberSlots / totalSlots));
           return acc;
         }, {} as Record<number, number>);
       }
@@ -242,7 +259,7 @@ export function AddExpenseModal({
       // Sử dụng state riêng thay vì errors để hiển thị tip
       setFormData(prev => ({ 
         ...prev, 
-        tip: 'Mẹo: Chỉ cần nhập số tiền cho một số thành viên, số tiền còn lại sẽ tự động được chia đều cho các thành viên khác' 
+        tip: 'Mẹo: Chỉ cần nhập số tiền cho một số thành viên, số tiền còn lại sẽ tự động được phân chia theo tỷ lệ số người (slots) cho các thành viên khác' 
       }));
       
       // Tự động xóa gợi ý sau 5 giây
@@ -294,20 +311,59 @@ export function AddExpenseModal({
       
       // Nếu còn số tiền để chia và có thành viên chưa được chỉ định
       if (remainingAmount > 0 && unassignedMembers.length > 0) {
-        // Chia đều số tiền còn lại
-        const amountPerMember = Math.floor(remainingAmount / unassignedMembers.length);
-        
-        // Xử lý phần dư (nếu có) bằng cách thêm 1 vào từng người cho đến khi hết
-        let remainder = remainingAmount - (amountPerMember * unassignedMembers.length);
-        
-        // Cập nhật số tiền cho các thành viên chưa được chỉ định
-        unassignedMembers.forEach(id => {
-          // Thêm phần dư (nếu còn)
-          const extra = remainder > 0 ? 1 : 0;
-          if (extra > 0) remainder -= 1;
+        // Tính tổng số slots của các thành viên chưa được chỉ định
+        const totalUnassignedSlots = unassignedMembers.reduce((total, id) => {
+          const member = members.find(m => m.id === id);
+          return total + (member ? member.slots || 1 : 1);
+        }, 0);
+
+        // Nếu không có slots nào, hoặc tổng là 0, thì chia đều
+        if (totalUnassignedSlots <= 0) {
+          // Chia đều số tiền còn lại
+          const amountPerMember = Math.floor(remainingAmount / unassignedMembers.length);
           
-          updatedAmounts[id] = amountPerMember + extra;
-        });
+          // Xử lý phần dư (nếu có) bằng cách thêm 1 vào từng người cho đến khi hết
+          let remainder = remainingAmount - (amountPerMember * unassignedMembers.length);
+          
+          // Cập nhật số tiền cho các thành viên chưa được chỉ định
+          unassignedMembers.forEach(id => {
+            // Thêm phần dư (nếu còn)
+            const extra = remainder > 0 ? 1 : 0;
+            if (extra > 0) remainder -= 1;
+            
+            updatedAmounts[id] = amountPerMember + extra;
+          });
+        } else {
+          // Phân chia theo tỷ lệ slots
+          let remainderAfterSlots = remainingAmount;
+          
+          // Đầu tiên tính toán số tiền cho mỗi thành viên dựa trên slots
+          unassignedMembers.forEach(id => {
+            const member = members.find(m => m.id === id);
+            const memberSlots = member ? member.slots || 1 : 1;
+            
+            // Phân chia tiền theo tỷ lệ slots
+            const memberAmount = Math.floor(remainingAmount * (memberSlots / totalUnassignedSlots));
+            updatedAmounts[id] = memberAmount;
+            remainderAfterSlots -= memberAmount;
+          });
+          
+          // Xử lý phần dư (nếu có) bằng cách thêm 1 vào từng người theo thứ tự slots từ lớn đến nhỏ
+          if (remainderAfterSlots > 0) {
+            const sortedBySlots = [...unassignedMembers].sort((a, b) => {
+              const slotA = members.find(m => m.id === a)?.slots || 1;
+              const slotB = members.find(m => m.id === b)?.slots || 1;
+              return slotB - slotA;
+            });
+            
+            let index = 0;
+            while (remainderAfterSlots > 0 && index < sortedBySlots.length) {
+              updatedAmounts[sortedBySlots[index]] += 1;
+              remainderAfterSlots -= 1;
+              index = (index + 1) % sortedBySlots.length;
+            }
+          }
+        }
       } else if (remainingAmount <= 0) {
         // Nếu đã chỉ định hết hoặc quá số tiền, gán 0 cho tất cả thành viên còn lại
         unassignedMembers.forEach(id => {
@@ -365,10 +421,20 @@ export function AddExpenseModal({
                     let customAmounts = { ...prev.customAmounts };
                     if (prev.isCustomSplit && prev.participants.length > 0) {
                       const totalAmount = parseFloat(newAmount) || 0;
-                      const equalAmount = Math.round(totalAmount / prev.participants.length);
                       
+                      // Tính tổng số slots của tất cả người tham gia
+                      const totalSlots = prev.participants.reduce((total, id) => {
+                        const member = members.find(m => m.id === id);
+                        return total + (member ? member.slots || 1 : 1);
+                      }, 0);
+                      
+                      // Phân chia số tiền theo tỷ lệ slots
                       customAmounts = prev.participants.reduce((acc, id) => {
-                        acc[id] = equalAmount;
+                        const member = members.find(m => m.id === id);
+                        const memberSlots = member ? member.slots || 1 : 1;
+                        
+                        // Phân chia tiền theo tỷ lệ slots
+                        acc[id] = Math.round(totalAmount * (memberSlots / totalSlots));
                         return acc;
                       }, {} as Record<number, number>);
                     }
@@ -427,7 +493,7 @@ export function AddExpenseModal({
                       onCheckedChange={() => handleParticipantToggle(member.id)}
                     />
                     <Label htmlFor={`participant-${member.id}`} className="text-sm cursor-pointer">
-                      {member.name}
+                      {member.name} {member.slots && member.slots > 1 ? `(${member.slots})` : ''}
                     </Label>
                   </div>
                 ))}
@@ -459,7 +525,7 @@ export function AddExpenseModal({
                       return (
                         <div key={`amount-${participantId}`} className="flex items-center space-x-2">
                           <Label htmlFor={`amount-${participantId}`} className="text-sm min-w-[100px]">
-                            {member.name}
+                            {member.name} {member.slots && member.slots > 1 ? `(${member.slots})` : ''}
                           </Label>
                           <Input
                             id={`amount-${participantId}`}

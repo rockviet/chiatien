@@ -20,7 +20,8 @@ interface AddMemberModalProps {
   onClose: () => void;
   mode: 'add' | 'edit';
   initialName?: string;
-  onSubmit?: (name: string) => void;
+  initialSlots?: number;
+  onSubmit?: (name: string, slots: number) => void;
 }
 
 export function AddMemberModal({ 
@@ -28,11 +29,13 @@ export function AddMemberModal({
   onClose, 
   mode = 'add',
   initialName = '',
+  initialSlots = 1,
   onSubmit
 }: AddMemberModalProps) {
   const { addMember } = useSession();
   const [currentName, setCurrentName] = useState('');
   const [memberNames, setMemberNames] = useState<string[]>(mode === 'edit' && initialName ? [initialName] : []);
+  const [slots, setSlots] = useState(initialSlots);
   const [error, setError] = useState('');
   
   useEffect(() => {
@@ -40,13 +43,15 @@ export function AddMemberModal({
       if (mode === 'edit' && initialName) {
         setMemberNames([initialName]);
         setCurrentName('');
+        setSlots(initialSlots);
       } else if (mode === 'add') {
         // Không reset danh sách nếu đang thêm nhiều thành viên
         setCurrentName('');
+        setSlots(1); // Default 1 slot
       }
       setError('');
     }
-  }, [isOpen, initialName, mode]);
+  }, [isOpen, initialName, initialSlots, mode]);
 
   const addToList = () => {
     const trimmedName = currentName.trim();
@@ -91,11 +96,11 @@ export function AddMemberModal({
     if (mode === 'add') {
       // Thêm từng thành viên trong danh sách
       memberNames.forEach(name => {
-        addMember(name);
+        addMember(name, slots);
       });
     } else if (mode === 'edit' && onSubmit && memberNames.length > 0) {
       // Trong chế độ sửa, chỉ lấy tên đầu tiên
-      onSubmit(memberNames[0]);
+      onSubmit(memberNames[0], slots);
     }
     
     // Reset và đóng
@@ -177,6 +182,27 @@ export function AddMemberModal({
                   placeholder={mode === 'add' ? "Nhập tên, nhấn Enter để thêm nhiều" : "Nhập tên thành viên"}
                   autoFocus
                 />
+              </div>
+              
+              {/* Input Slots */}
+              <div className="mt-3">
+                <Label htmlFor="member-slots" className="block text-sm font-medium text-gray-700 mb-1">
+                  Số người
+                </Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="member-slots"
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={slots}
+                    onChange={(e) => setSlots(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="w-24"
+                  />
+                  <span className="text-sm text-gray-500">
+                    {slots === 1 ? 'Single' : slots === 2 ? 'Cặp đôi' : `${slots} người`}
+                  </span>
+                </div>
               </div>
               {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
             </div>

@@ -137,7 +137,8 @@ export class FileStore implements IStorage {
     const newMember: Member = {
       id,
       name: member.name,
-      sessionId: member.sessionId
+      sessionId: member.sessionId,
+      slots: member.slots ?? 1
     };
     
     this.data.members.push(newMember);
@@ -146,13 +147,14 @@ export class FileStore implements IStorage {
     return newMember;
   }
 
-  async updateMember(id: number, name: string): Promise<Member | undefined> {
+  async updateMember(id: number, name: string, slots?: number): Promise<Member | undefined> {
     const index = this.data.members.findIndex(m => m.id === id);
     if (index === -1) return undefined;
     
     const updatedMember: Member = {
       ...this.data.members[index],
-      name
+      name,
+      ...(slots !== undefined ? { slots } : {})
     };
     
     this.data.members[index] = updatedMember;

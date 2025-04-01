@@ -14,6 +14,7 @@ export const members = pgTable("members", {
   id: serial("id").primaryKey(),
   sessionId: integer("session_id").notNull().references(() => sessions.id, { onDelete: 'cascade' }),
   name: text("name").notNull(),
+  slots: integer("slots").default(1).notNull(), // Số người thực tế: 1 = single, 2 = vợ chồng, v.v.
 });
 
 // Expense table to store expenses for each session
@@ -37,6 +38,7 @@ export const insertSessionSchema = createInsertSchema(sessions).pick({
 export const insertMemberSchema = createInsertSchema(members).pick({
   sessionId: true,
   name: true,
+  slots: true,
 });
 
 export const insertExpenseSchema = createInsertSchema(expenses).pick({

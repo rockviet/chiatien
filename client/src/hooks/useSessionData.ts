@@ -5,6 +5,7 @@ import {
   calculateBalances, 
   calculateSettlements, 
   calculateExpenseSummary,
+  getMemberSplitAmount,
   Settlement, 
   ExpenseSummary
 } from '@/utils/calculations';
@@ -42,19 +43,8 @@ export function useSessionData() {
     const splitAmounts: { [key: number]: number } = {};
     
     members.forEach(member => {
-      if (!expense.participants.includes(member.id)) {
-        splitAmounts[member.id] = 0;
-        return;
-      }
-      
-      if (expense.isCustomSplit && expense.customAmounts && expense.customAmounts[member.id] !== undefined) {
-        // Use custom amount if defined
-        splitAmounts[member.id] = expense.customAmounts[member.id];
-      } else {
-        // Equal split
-        const amountPerPerson = Math.round(expense.amount / expense.participants.length);
-        splitAmounts[member.id] = amountPerPerson;
-      }
+      // Sử dụng hàm getMemberSplitAmount để tính toán chính xác với slots
+      splitAmounts[member.id] = getMemberSplitAmount(expense, member.id, members);
     });
     
     return splitAmounts;
