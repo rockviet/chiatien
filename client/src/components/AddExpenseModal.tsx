@@ -41,7 +41,8 @@ export function AddExpenseModal({
     payerId: '',
     participants: [] as number[],
     isCustomSplit: false,
-    customAmounts: {} as Record<number, number>
+    customAmounts: {} as Record<number, number>,
+    tip: ''
   });
   const [errors, setErrors] = useState({
     name: '',
@@ -60,7 +61,8 @@ export function AddExpenseModal({
           payerId: expense.payerId.toString(),
           participants: [...expense.participants],
           isCustomSplit: expense.isCustomSplit || false,
-          customAmounts: expense.customAmounts || {}
+          customAmounts: expense.customAmounts || {},
+          tip: ''
         });
       } else {
         setFormData({
@@ -69,7 +71,8 @@ export function AddExpenseModal({
           payerId: '',
           participants: [],
           isCustomSplit: false,
-          customAmounts: {}
+          customAmounts: {},
+          tip: ''
         });
       }
       setErrors({
@@ -208,7 +211,7 @@ export function AddExpenseModal({
       let customAmounts = {};
       
       if (checked) {
-        // Initialize custom amounts with equal split
+        // Khi bật tính năng tự chia tiền, mặc định để tất cả đều chia đều
         const totalAmount = parseFloat(prev.amount) || 0;
         const equalAmount = Math.round(totalAmount / prev.participants.length);
         
@@ -220,15 +223,69 @@ export function AddExpenseModal({
       
       return { ...prev, isCustomSplit: checked, customAmounts };
     });
+    
+    // Thêm gợi ý về tính năng chia tiền tự động
+    if (checked) {
+      // Sử dụng state riêng thay vì errors để hiển thị tip
+      setFormData(prev => ({ 
+        ...prev, 
+        tip: 'Mẹo: Chỉ cần nhập số tiền cho một số thành viên, số tiền còn lại sẽ tự động được chia đều cho các thành viên khác' 
+      }));
+      
+      // Tự động xóa gợi ý sau 5 giây
+      setTimeout(() => {
+        setFormData(prev => ({ ...prev, tip: '' }));
+      }, 5000);
+    }
   };
   
   const handleCustomAmountChange = (memberId: number, value: string) => {
     const amount = parseInt(value, 10) || 0;
     
-    setFormData(prev => ({
-      ...prev,
-      customAmounts: { ...prev.customAmounts, [memberId]: amount }
-    }));
+    setFormData(prev => {
+      // Lấy tổng số tiền chi tiêu
+      const totalExpense = parseFloat(prev.amount) || 0;
+      
+      // Tạo bản sao của customAmounts và cập nhật cho thành viên hiện tại
+      const updatedAmounts = { ...prev.customAmounts, [memberId]: amount };
+      
+      // Lấy danh sách thành viên đã được chỉ định số tiền
+      const membersWithAmount = Object.keys(updatedAmounts).map(id => parseInt(id, 10));
+      
+      // Tìm thành viên chưa được chỉ định số tiền (số tiền = 0 cũng được tính là đã chỉ định)
+      const unassignedMembers = prev.participants.filter(id => 
+        !membersWithAmount.includes(id) || updatedAmounts[id] === 0
+      );
+      
+      // Tính tổng số tiền đã được chỉ định
+      const assignedTotal = Object.values(updatedAmounts).reduce((sum, val) => sum + val, 0);
+      
+      // Số tiền còn lại cần chia
+      const remainingAmount = totalExpense - assignedTotal;
+      
+      // Nếu còn số tiền để chia và có thành viên chưa được chỉ định
+      if (remainingAmount > 0 && unassignedMembers.length > 0) {
+        // Chia đều số tiền còn lại
+        const amountPerMember = Math.floor(remainingAmount / unassignedMembers.length);
+        
+        // Xử lý phần dư (nếu có) bằng cách thêm 1 vào từng người cho đến khi hết
+        let remainder = remainingAmount - (amountPerMember * unassignedMembers.length);
+        
+        // Cập nhật số tiền cho các thành viên chưa được chỉ định
+        unassignedMembers.forEach(id => {
+          // Thêm phần dư (nếu còn)
+          const extra = remainder > 0 ? 1 : 0;
+          if (extra > 0) remainder -= 1;
+          
+          updatedAmounts[id] = amountPerMember + extra;
+        });
+      }
+      
+      return {
+        ...prev,
+        customAmounts: updatedAmounts
+      };
+    });
     
     // Clear errors
     if (errors.customAmounts) {
@@ -384,6 +441,11 @@ export function AddExpenseModal({
                   </div>
                   {errors.customAmounts && (
                     <p className="text-sm text-red-500 mt-1">{errors.customAmounts}</p>
+                  )}
+                  
+                  {/* Show tips */}
+                  {formData.tip && (
+                    <p className="text-sm text-blue-500 mt-1 italic">{formData.tip}</p>
                   )}
                   
                   {/* Show total */}

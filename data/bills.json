@@ -59,6 +59,21 @@
       "id": 12,
       "code": "HLGBX8",
       "createdAt": "2025-04-01T09:04:36.066Z"
+    },
+    {
+      "id": 13,
+      "code": "EW4O7E",
+      "createdAt": "2025-04-01T09:10:23.207Z"
+    },
+    {
+      "id": 14,
+      "code": "JEN9XL",
+      "createdAt": "2025-04-01T09:17:22.265Z"
+    },
+    {
+      "id": 15,
+      "code": "VOPIG1",
+      "createdAt": "2025-04-01T09:17:25.013Z"
     }
   ],
   "members": [
@@ -86,6 +101,26 @@
       "id": 5,
       "name": "Quang",
       "sessionId": 6
+    },
+    {
+      "id": 6,
+      "name": "Việt",
+      "sessionId": 13
+    },
+    {
+      "id": 7,
+      "name": "Thảo",
+      "sessionId": 13
+    },
+    {
+      "id": 8,
+      "name": "Hải",
+      "sessionId": 13
+    },
+    {
+      "id": 9,
+      "name": "Tân",
+      "sessionId": 13
     }
   ],
   "expenses": [
@@ -108,8 +143,8 @@
     }
   ],
   "counters": {
-    "sessionId": 13,
-    "memberId": 6,
+    "sessionId": 16,
+    "memberId": 10,
     "expenseId": 2
   }
 }
