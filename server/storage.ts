@@ -121,9 +121,23 @@ export class MemStorage implements IStorage {
     const id = this.expenseIdCounter++;
     const now = new Date();
     
+    // Make sure we have the correct types
+    const participants: number[] = Array.isArray(expense.participants) 
+      ? expense.participants.map(p => Number(p)) 
+      : [];
+      
+    const customAmounts: Record<number, number> = expense.customAmounts || {};
+    const isCustomSplit: boolean = expense.isCustomSplit || false;
+    
     const newExpense: Expense = { 
-      ...expense, 
       id,
+      sessionId: expense.sessionId,
+      name: expense.name,
+      amount: expense.amount,
+      payerId: expense.payerId,
+      participants,
+      customAmounts,
+      isCustomSplit,
       createdAt: now
     };
     
@@ -135,7 +149,36 @@ export class MemStorage implements IStorage {
     const expense = this.expenses.get(id);
     if (!expense) return undefined;
     
-    const updatedExpense = { ...expense, ...expenseData };
+    // Carefully handle array and object types
+    const updateData: Partial<Expense> = {};
+    
+    if (expenseData.name !== undefined) {
+      updateData.name = expenseData.name;
+    }
+    
+    if (expenseData.amount !== undefined) {
+      updateData.amount = expenseData.amount;
+    }
+    
+    if (expenseData.payerId !== undefined) {
+      updateData.payerId = expenseData.payerId;
+    }
+    
+    if (expenseData.participants !== undefined) {
+      updateData.participants = Array.isArray(expenseData.participants) 
+        ? expenseData.participants.map(p => Number(p))
+        : [];
+    }
+    
+    if (expenseData.customAmounts !== undefined) {
+      updateData.customAmounts = expenseData.customAmounts;
+    }
+    
+    if (expenseData.isCustomSplit !== undefined) {
+      updateData.isCustomSplit = expenseData.isCustomSplit;
+    }
+    
+    const updatedExpense = { ...expense, ...updateData };
     this.expenses.set(id, updatedExpense);
     return updatedExpense;
   }

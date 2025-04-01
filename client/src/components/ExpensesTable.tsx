@@ -3,7 +3,7 @@ import { useSession } from '@/context/SessionContext';
 import { useSessionData } from '@/hooks/useSessionData';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, SplitSquareHorizontal } from 'lucide-react';
 import { AddExpenseModal } from './AddExpenseModal';
 import { Expense } from '@shared/schema';
 import {
@@ -16,6 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export function ExpensesTable() {
   const { members, expenses, deleteExpense } = useSession();
@@ -111,7 +112,25 @@ export function ExpensesTable() {
                   
                   return (
                     <tr key={expense.id} className="expense-row">
-                      <td className="py-3 px-4 text-sm font-medium">{expense.name}</td>
+                      <td className="py-3 px-4 text-sm font-medium">
+                        <div className="flex items-center">
+                          {expense.name}
+                          {expense.isCustomSplit && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="ml-1 inline-flex items-center">
+                                    <SplitSquareHorizontal className="h-4 w-4 text-primary" />
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Tự chia tiền</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                        </div>
+                      </td>
                       <td className="py-3 px-4 text-sm">{expense.amount}</td>
                       <td className="py-3 px-4 text-sm">{payer?.name}</td>
                       
@@ -124,9 +143,11 @@ export function ExpensesTable() {
                               className="h-4 w-4 text-primary focus:ring-primary rounded"
                             />
                           </div>
-                          <div className="text-xs mt-1 text-gray-600">
-                            {splitAmounts[member.id]}
-                          </div>
+                          {expense.participants.includes(member.id) && (
+                            <div className={`text-xs mt-1 ${expense.isCustomSplit ? 'font-medium text-primary' : 'text-gray-600'}`}>
+                              {splitAmounts[member.id]}
+                            </div>
+                          )}
                         </td>
                       ))}
                       

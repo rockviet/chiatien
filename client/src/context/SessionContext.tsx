@@ -15,8 +15,22 @@ interface SessionContextType {
   addMember: (name: string) => void;
   updateMember: (id: number, name: string) => void;
   deleteMember: (id: number) => void;
-  addExpense: (data: { name: string; amount: number; payerId: number; participants: number[] }) => void;
-  updateExpense: (id: number, data: { name?: string; amount?: number; payerId?: number; participants?: number[] }) => void;
+  addExpense: (data: { 
+    name: string; 
+    amount: number; 
+    payerId: number; 
+    participants: number[]; 
+    customAmounts?: Record<number, number>;
+    isCustomSplit?: boolean;
+  }) => void;
+  updateExpense: (id: number, data: { 
+    name?: string; 
+    amount?: number; 
+    payerId?: number; 
+    participants?: number[]; 
+    customAmounts?: Record<number, number>;
+    isCustomSplit?: boolean;
+  }) => void;
   deleteExpense: (id: number) => void;
 }
 
@@ -330,7 +344,14 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
     });
   };
 
-  const addExpense = (data: { name: string; amount: number; payerId: number; participants: number[] }) => {
+  const addExpense = (data: { 
+    name: string; 
+    amount: number; 
+    payerId: number; 
+    participants: number[];
+    customAmounts?: Record<number, number>;
+    isCustomSplit?: boolean; 
+  }) => {
     if (!sessionId) return;
     
     sendMessage({
@@ -342,7 +363,14 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
     });
   };
 
-  const updateExpense = (id: number, data: { name?: string; amount?: number; payerId?: number; participants?: number[] }) => {
+  const updateExpense = (id: number, data: { 
+    name?: string; 
+    amount?: number; 
+    payerId?: number; 
+    participants?: number[];
+    customAmounts?: Record<number, number>;
+    isCustomSplit?: boolean;
+  }) => {
     sendMessage({
       type: MessageType.EXPENSE_UPDATED,
       payload: {

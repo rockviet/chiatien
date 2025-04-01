@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -38,13 +39,16 @@ export function AddExpenseModal({
     name: '',
     amount: '',
     payerId: '',
-    participants: [] as number[]
+    participants: [] as number[],
+    isCustomSplit: false,
+    customAmounts: {} as Record<number, number>
   });
   const [errors, setErrors] = useState({
     name: '',
     amount: '',
     payerId: '',
-    participants: ''
+    participants: '',
+    customAmounts: ''
   });
 
   useEffect(() => {
@@ -54,21 +58,26 @@ export function AddExpenseModal({
           name: expense.name,
           amount: expense.amount.toString(),
           payerId: expense.payerId.toString(),
-          participants: [...expense.participants]
+          participants: [...expense.participants],
+          isCustomSplit: expense.isCustomSplit || false,
+          customAmounts: expense.customAmounts || {}
         });
       } else {
         setFormData({
           name: '',
           amount: '',
           payerId: '',
-          participants: []
+          participants: [],
+          isCustomSplit: false,
+          customAmounts: {}
         });
       }
       setErrors({
         name: '',
         amount: '',
         payerId: '',
-        participants: ''
+        participants: '',
+        customAmounts: ''
       });
     }
   }, [isOpen, mode, expense]);
@@ -78,7 +87,8 @@ export function AddExpenseModal({
       name: '',
       amount: '',
       payerId: '',
-      participants: ''
+      participants: '',
+      customAmounts: ''
     };
     
     if (!formData.name.trim()) {
@@ -99,6 +109,18 @@ export function AddExpenseModal({
       newErrors.participants = 'Vui lòng chọn ít nhất một người tham gia';
     }
     
+    // Validate custom amounts if using custom split
+    if (formData.isCustomSplit) {
+      const totalCustomAmount = Object.values(formData.customAmounts)
+        .reduce((sum, amount) => sum + amount, 0);
+      
+      const totalExpense = parseFloat(formData.amount);
+      
+      if (Math.abs(totalCustomAmount - totalExpense) > 0.01) {
+        newErrors.customAmounts = `Tổng số tiền tùy chỉnh (${totalCustomAmount}) phải bằng tổng chi phí (${totalExpense})`;
+      }
+    }
+    
     setErrors(newErrors);
     return !Object.values(newErrors).some(error => error);
   };
@@ -112,7 +134,9 @@ export function AddExpenseModal({
       name: formData.name.trim(),
       amount: parseInt(formData.amount, 10),
       payerId: parseInt(formData.payerId, 10),
-      participants: formData.participants
+      participants: formData.participants,
+      isCustomSplit: formData.isCustomSplit,
+      customAmounts: formData.isCustomSplit ? formData.customAmounts : {}
     };
     
     if (mode === 'add') {
@@ -130,7 +154,18 @@ export function AddExpenseModal({
         ? prev.participants.filter(id => id !== memberId)
         : [...prev.participants, memberId];
       
-      return { ...prev, participants };
+      // Update customAmounts when removing a participant
+      const customAmounts = { ...prev.customAmounts };
+      if (!participants.includes(memberId) && customAmounts[memberId] !== undefined) {
+        delete customAmounts[memberId];
+      } else if (participants.includes(memberId) && customAmounts[memberId] === undefined && prev.isCustomSplit) {
+        // Add default amount
+        const totalAmount = parseFloat(prev.amount) || 0;
+        const defaultAmount = Math.round(totalAmount / participants.length);
+        customAmounts[memberId] = defaultAmount;
+      }
+      
+      return { ...prev, participants, customAmounts };
     });
     
     // Clear participant error if any are selected
@@ -140,14 +175,64 @@ export function AddExpenseModal({
   };
 
   const handleSelectAllParticipants = () => {
-    setFormData(prev => ({
-      ...prev,
-      participants: members.map(member => member.id)
-    }));
+    setFormData(prev => {
+      const allParticipants = members.map(member => member.id);
+      
+      // Update custom amounts if using custom split
+      let customAmounts = { ...prev.customAmounts };
+      if (prev.isCustomSplit) {
+        const totalAmount = parseFloat(prev.amount) || 0;
+        const equalAmount = Math.round(totalAmount / allParticipants.length);
+        
+        customAmounts = allParticipants.reduce((acc, id) => {
+          acc[id] = equalAmount;
+          return acc;
+        }, {} as Record<number, number>);
+      }
+      
+      return {
+        ...prev,
+        participants: allParticipants,
+        customAmounts
+      };
+    });
     
     // Clear participant error
     if (errors.participants) {
       setErrors(prev => ({ ...prev, participants: '' }));
+    }
+  };
+  
+  const handleToggleCustomSplit = (checked: boolean) => {
+    setFormData(prev => {
+      let customAmounts = {};
+      
+      if (checked) {
+        // Initialize custom amounts with equal split
+        const totalAmount = parseFloat(prev.amount) || 0;
+        const equalAmount = Math.round(totalAmount / prev.participants.length);
+        
+        customAmounts = prev.participants.reduce((acc, id) => {
+          acc[id] = equalAmount;
+          return acc;
+        }, {} as Record<number, number>);
+      }
+      
+      return { ...prev, isCustomSplit: checked, customAmounts };
+    });
+  };
+  
+  const handleCustomAmountChange = (memberId: number, value: string) => {
+    const amount = parseInt(value, 10) || 0;
+    
+    setFormData(prev => ({
+      ...prev,
+      customAmounts: { ...prev.customAmounts, [memberId]: amount }
+    }));
+    
+    // Clear errors
+    if (errors.customAmounts) {
+      setErrors(prev => ({ ...prev, customAmounts: '' }));
     }
   };
 
@@ -182,7 +267,24 @@ export function AddExpenseModal({
                 id="expense-amount"
                 type="number"
                 value={formData.amount}
-                onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
+                onChange={(e) => {
+                  const newAmount = e.target.value;
+                  setFormData(prev => {
+                    // Update customAmounts if using custom split
+                    let customAmounts = { ...prev.customAmounts };
+                    if (prev.isCustomSplit && prev.participants.length > 0) {
+                      const totalAmount = parseFloat(newAmount) || 0;
+                      const equalAmount = Math.round(totalAmount / prev.participants.length);
+                      
+                      customAmounts = prev.participants.reduce((acc, id) => {
+                        acc[id] = equalAmount;
+                        return acc;
+                      }, {} as Record<number, number>);
+                    }
+                    
+                    return { ...prev, amount: newAmount, customAmounts: prev.isCustomSplit ? customAmounts : prev.customAmounts };
+                  });
+                }}
                 placeholder="Nhập số tiền"
                 min="1"
                 className={errors.amount ? "border-red-500" : ""}
@@ -240,6 +342,59 @@ export function AddExpenseModal({
                 ))}
               </div>
               {errors.participants && <p className="text-sm text-red-500">{errors.participants}</p>}
+            </div>
+            
+            {/* Custom Split Toggle */}
+            <div className="space-y-1">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="custom-split"
+                  checked={formData.isCustomSplit}
+                  onCheckedChange={handleToggleCustomSplit}
+                />
+                <Label htmlFor="custom-split" className="cursor-pointer">
+                  Tự chia tiền
+                </Label>
+              </div>
+              
+              {/* Custom Split Amounts */}
+              {formData.isCustomSplit && formData.participants.length > 0 && (
+                <div className="mt-2">
+                  <div className="bg-gray-50 p-3 rounded-md space-y-2">
+                    {formData.participants.map(participantId => {
+                      const member = members.find(m => m.id === participantId);
+                      if (!member) return null;
+                      
+                      return (
+                        <div key={`amount-${participantId}`} className="flex items-center space-x-2">
+                          <Label htmlFor={`amount-${participantId}`} className="text-sm min-w-[100px]">
+                            {member.name}
+                          </Label>
+                          <Input
+                            id={`amount-${participantId}`}
+                            type="number"
+                            value={formData.customAmounts[participantId] || 0}
+                            onChange={(e) => handleCustomAmountChange(participantId, e.target.value)}
+                            className="w-24"
+                            min="0"
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {errors.customAmounts && (
+                    <p className="text-sm text-red-500 mt-1">{errors.customAmounts}</p>
+                  )}
+                  
+                  {/* Show total */}
+                  <div className="flex justify-between mt-2 text-sm font-medium">
+                    <span>Tổng số tiền tùy chỉnh:</span>
+                    <span>
+                      {Object.values(formData.customAmounts).reduce((sum, amount) => sum + amount, 0)} / {formData.amount || 0}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           

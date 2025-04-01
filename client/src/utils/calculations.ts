@@ -35,16 +35,24 @@ export function calculateBalances(members: Member[], expenses: Expense[]): Membe
   
   // Calculate net balance for each member based on expenses
   expenses.forEach(expense => {
-    const { payerId, amount, participants } = expense;
+    const { payerId, amount, participants, isCustomSplit, customAmounts } = expense;
     
     // Add the full amount to payer's balance (they paid for everyone)
     balances[payerId] += amount;
     
-    // Split the expense among participants and subtract from each
-    const sharePerPerson = amount / participants.length;
-    participants.forEach(participantId => {
-      balances[participantId] -= sharePerPerson;
-    });
+    if (isCustomSplit && Object.keys(customAmounts).length > 0) {
+      // Use custom split amounts
+      participants.forEach(participantId => {
+        const customAmount = customAmounts[participantId] || 0;
+        balances[participantId] -= customAmount;
+      });
+    } else {
+      // Split the expense evenly among participants
+      const sharePerPerson = amount / participants.length;
+      participants.forEach(participantId => {
+        balances[participantId] -= sharePerPerson;
+      });
+    }
   });
   
   return Object.entries(balances).map(([id, balance]) => ({
@@ -143,6 +151,10 @@ export function calculateExpenseSummary(expenses: Expense[]): ExpenseSummary {
 export function getMemberSplitAmount(expense: Expense, memberId: number): number {
   if (!expense.participants.includes(memberId)) {
     return 0;
+  }
+  
+  if (expense.isCustomSplit && expense.customAmounts && typeof expense.customAmounts[memberId] === 'number') {
+    return expense.customAmounts[memberId];
   }
   
   return Math.round(expense.amount / expense.participants.length);

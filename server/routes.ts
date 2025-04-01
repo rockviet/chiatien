@@ -243,7 +243,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               name: z.string().min(1),
               amount: z.number().positive(),
               payerId: z.number(),
-              participants: z.array(z.number())
+              participants: z.array(z.number()),
+              customAmounts: z.record(z.string(), z.number()).optional().default({}),
+              isCustomSplit: z.boolean().optional().default(false)
             });
             
             const result = schema.safeParse(data.payload);
@@ -280,7 +282,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               name: z.string().min(1).optional(),
               amount: z.number().positive().optional(),
               payerId: z.number().optional(),
-              participants: z.array(z.number()).optional()
+              participants: z.array(z.number()).optional(),
+              customAmounts: z.record(z.string(), z.number()).optional(),
+              isCustomSplit: z.boolean().optional()
             });
             
             const result = schema.safeParse(data.payload);

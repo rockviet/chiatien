@@ -24,6 +24,8 @@ export const expenses = pgTable("expenses", {
   amount: integer("amount").notNull(), // Stored in thousand VND
   payerId: integer("payer_id").notNull().references(() => members.id, { onDelete: 'cascade' }),
   participants: jsonb("participants").notNull().$type<number[]>(), // Array of member IDs
+  customAmounts: jsonb("custom_amounts").notNull().$type<Record<number, number>>(), // Custom amounts for each participant
+  isCustomSplit: boolean("is_custom_split").default(false).notNull(), // Flag for custom split
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -43,6 +45,8 @@ export const insertExpenseSchema = createInsertSchema(expenses).pick({
   amount: true,
   payerId: true,
   participants: true,
+  customAmounts: true,
+  isCustomSplit: true,
 });
 
 // Types for TypeScript

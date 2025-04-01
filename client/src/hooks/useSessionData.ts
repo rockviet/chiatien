@@ -40,10 +40,21 @@ export function useSessionData() {
 
   const getMemberSplitAmounts = (expense: Expense): { [key: number]: number } => {
     const splitAmounts: { [key: number]: number } = {};
-    const amountPerPerson = Math.round(expense.amount / expense.participants.length);
     
     members.forEach(member => {
-      splitAmounts[member.id] = expense.participants.includes(member.id) ? amountPerPerson : 0;
+      if (!expense.participants.includes(member.id)) {
+        splitAmounts[member.id] = 0;
+        return;
+      }
+      
+      if (expense.isCustomSplit && expense.customAmounts && expense.customAmounts[member.id] !== undefined) {
+        // Use custom amount if defined
+        splitAmounts[member.id] = expense.customAmounts[member.id];
+      } else {
+        // Equal split
+        const amountPerPerson = Math.round(expense.amount / expense.participants.length);
+        splitAmounts[member.id] = amountPerPerson;
+      }
     });
     
     return splitAmounts;

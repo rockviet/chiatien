@@ -204,6 +204,9 @@ export class FileStore implements IStorage {
       ? expense.participants.map(p => Number(p))
       : [];
     
+    // Chuẩn bị customAmounts, mặc định là {}
+    const customAmounts: Record<number, number> = expense.customAmounts || {};
+    
     const newExpense: Expense = {
       id,
       name: expense.name,
@@ -211,6 +214,8 @@ export class FileStore implements IStorage {
       amount: expense.amount,
       payerId: expense.payerId,
       participants,
+      customAmounts,
+      isCustomSplit: expense.isCustomSplit || false,
       createdAt: now
     };
     
@@ -243,6 +248,14 @@ export class FileStore implements IStorage {
       updateData.participants = Array.isArray(expenseData.participants)
         ? expenseData.participants.map(p => Number(p))
         : [];
+    }
+    
+    if (expenseData.customAmounts !== undefined) {
+      updateData.customAmounts = expenseData.customAmounts;
+    }
+    
+    if (expenseData.isCustomSplit !== undefined) {
+      updateData.isCustomSplit = expenseData.isCustomSplit;
     }
     
     const updatedExpense: Expense = {
