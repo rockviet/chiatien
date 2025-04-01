@@ -56,14 +56,17 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl = `${protocol}//${window.location.host}/ws`;
     
+    console.log(`Connecting to WebSocket at: ${wsUrl}`);
     const ws = new WebSocket(wsUrl);
     
     ws.onopen = () => {
+      console.log("WebSocket connection opened successfully");
       setIsConnected(true);
       setError(null);
     };
     
-    ws.onclose = () => {
+    ws.onclose = (event) => {
+      console.log(`WebSocket connection closed. Code: ${event.code}, Reason: ${event.reason}`);
       setIsConnected(false);
       setError("Mất kết nối với máy chủ. Vui lòng tải lại trang.");
       toast({
@@ -73,7 +76,8 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
       });
     };
     
-    ws.onerror = () => {
+    ws.onerror = (error) => {
+      console.error("WebSocket connection error:", error);
       setError("Lỗi kết nối với máy chủ.");
       toast({
         variant: "destructive",
