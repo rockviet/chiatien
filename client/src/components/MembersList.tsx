@@ -68,18 +68,12 @@ export function MembersList() {
               </div>
             ) : (
               members.map(member => (
-                <div key={member.id} className="flex items-center px-3 py-1.5 rounded-md"
-                  style={{ 
-                    backgroundColor: getMemberColor(member.id) + '20' // Add 20% opacity
-                  }}
-                >
-                  <span 
-                    className="font-medium mr-2 px-2 py-0.5 rounded-full"
-                    style={{ 
-                      backgroundColor: getMemberColor(member.id),
-                      color: getContrastTextColor(getMemberColor(member.id))
-                    }}
-                  >
+                <div key={member.id} className="flex items-center px-3 py-1.5 rounded-md bg-gray-50">
+                  <span className="flex items-center font-medium mr-2">
+                    <span 
+                      className="inline-block w-3 h-3 rounded-full mr-2"
+                      style={{ backgroundColor: getMemberColor(member.id) }}
+                    ></span>
                     {member.name}
                   </span>
                   <button 

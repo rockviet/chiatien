@@ -27,23 +27,19 @@ export function SettlementList() {
           return (
             <li key={index} className="py-3 flex items-center justify-between">
               <div className="flex items-center">
-                <span 
-                  className="font-medium px-2 py-0.5 rounded-full text-xs"
-                  style={{ 
-                    backgroundColor: getMemberColor(fromMember.id),
-                    color: getContrastTextColor(getMemberColor(fromMember.id))
-                  }}
-                >
+                <span className="flex items-center text-xs font-medium">
+                  <span 
+                    className="inline-block w-3 h-3 rounded-full mr-1.5"
+                    style={{ backgroundColor: getMemberColor(fromMember.id) }}
+                  ></span>
                   {fromMember.name}
                 </span>
                 <ArrowRight className="mx-2 text-gray-500 h-4 w-4" />
-                <span 
-                  className="font-medium px-2 py-0.5 rounded-full text-xs"
-                  style={{ 
-                    backgroundColor: getMemberColor(toMember.id),
-                    color: getContrastTextColor(getMemberColor(toMember.id))
-                  }}
-                >
+                <span className="flex items-center text-xs font-medium">
+                  <span 
+                    className="inline-block w-3 h-3 rounded-full mr-1.5"
+                    style={{ backgroundColor: getMemberColor(toMember.id) }}
+                  ></span>
                   {toMember.name}
                 </span>
               </div>

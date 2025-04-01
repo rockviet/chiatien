@@ -99,13 +99,11 @@ export function ExpensesTable() {
                   const color = getMemberColor(member.id);
                   return (
                     <th key={member.id} scope="col" className="py-3 px-4 text-center text-xs font-medium uppercase tracking-wider">
-                      <span 
-                        className="px-2 py-1 rounded-full inline-block w-full" 
-                        style={{ 
-                          backgroundColor: color,
-                          color: getContrastTextColor(color)
-                        }}
-                      >
+                      <span className="flex items-center justify-center">
+                        <span 
+                          className="inline-block w-3 h-3 rounded-full mr-1.5"
+                          style={{ backgroundColor: color }}
+                        ></span>
                         {member.name}
                       </span>
                     </th>
@@ -154,13 +152,11 @@ export function ExpensesTable() {
                       <td className="py-3 px-4 text-sm">{expense.amount}</td>
                       <td className="py-3 px-4 text-sm">
                         {payer && (
-                          <span 
-                            className="px-2 py-1 rounded-full text-xs font-medium" 
-                            style={{ 
-                              backgroundColor: getMemberColor(payer.id),
-                              color: getContrastTextColor(getMemberColor(payer.id))
-                            }}
-                          >
+                          <span className="flex items-center text-xs font-medium">
+                            <span 
+                              className="inline-block w-3 h-3 rounded-full mr-1.5"
+                              style={{ backgroundColor: getMemberColor(payer.id) }}
+                            ></span>
                             {payer.name}
                           </span>
                         )}

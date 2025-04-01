@@ -109,13 +109,11 @@ export function ExpensesMobileView() {
                     <div>
                       <span>Người trả: </span>
                       {payer && (
-                        <span 
-                          className="px-2 py-1 rounded-full text-xs font-medium ml-1" 
-                          style={{ 
-                            backgroundColor: getMemberColor(payer.id),
-                            color: getContrastTextColor(getMemberColor(payer.id))
-                          }}
-                        >
+                        <span className="flex items-center text-xs font-medium ml-1">
+                          <span 
+                            className="inline-block w-3 h-3 rounded-full mr-1.5"
+                            style={{ backgroundColor: getMemberColor(payer.id) }}
+                          ></span>
                           {payer.name}
                         </span>
                       )}
@@ -139,13 +137,11 @@ export function ExpensesMobileView() {
                           
                           return (
                             <div key={member.id} className="flex justify-between text-sm py-1">
-                              <span 
-                                className="px-2 py-0.5 rounded-full text-xs font-medium" 
-                                style={{ 
-                                  backgroundColor: getMemberColor(member.id),
-                                  color: getContrastTextColor(getMemberColor(member.id))
-                                }}
-                              >
+                              <span className="flex items-center text-xs font-medium">
+                                <span 
+                                  className="inline-block w-3 h-3 rounded-full mr-1.5"
+                                  style={{ backgroundColor: getMemberColor(member.id) }}
+                                ></span>
                                 {member.name}
                               </span>
                               <span className={`${expense.isCustomSplit ? 'text-primary font-medium' : ''}`}>

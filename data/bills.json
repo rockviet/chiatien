@@ -49,6 +49,16 @@
       "id": 10,
       "code": "AV_F-R",
       "createdAt": "2025-04-01T08:35:30.781Z"
+    },
+    {
+      "id": 11,
+      "code": "ZPH0QS",
+      "createdAt": "2025-04-01T08:42:36.061Z"
+    },
+    {
+      "id": 12,
+      "code": "HLGBX8",
+      "createdAt": "2025-04-01T09:04:36.066Z"
     }
   ],
   "members": [
@@ -98,7 +108,7 @@
     }
   ],
   "counters": {
-    "sessionId": 11,
+    "sessionId": 13,
     "memberId": 6,
     "expenseId": 2
   }
