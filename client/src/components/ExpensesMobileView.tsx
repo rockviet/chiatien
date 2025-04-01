@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useSession } from '@/context/SessionContext';
 import { useSessionData } from '@/hooks/useSessionData';
 import { useResponsive } from '@/hooks/use-responsive';
+import { ExportMenu } from './ExportMenu';
 import { Button } from '@/components/ui/button';
 import { Plus, Pencil, Trash2, SplitSquareHorizontal, ChevronDown, ChevronUp } from 'lucide-react';
 import { AddExpenseModal } from './AddExpenseModal';
@@ -64,14 +65,17 @@ export function ExpensesMobileView() {
     <>
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-semibold">Chi tiêu</h2>
-        <Button 
-          onClick={() => setShowAddModal(true)}
-          className="bg-primary text-white hover:bg-blue-600 flex items-center"
-          size="sm"
-          disabled={members.length === 0}
-        >
-          <Plus className="mr-1 h-4 w-4" /> Thêm
-        </Button>
+        <div className="flex items-center gap-2">
+          <ExportMenu />
+          <Button 
+            onClick={() => setShowAddModal(true)}
+            className="bg-primary text-white hover:bg-blue-600 flex items-center"
+            size="sm"
+            disabled={members.length === 0}
+          >
+            <Plus className="mr-1 h-4 w-4" /> Thêm
+          </Button>
+        </div>
       </div>
       
       {expenses.length === 0 ? (

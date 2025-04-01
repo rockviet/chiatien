@@ -39,6 +39,11 @@
       "id": 8,
       "code": "QY4S3U",
       "createdAt": "2025-04-01T08:24:13.551Z"
+    },
+    {
+      "id": 9,
+      "code": "7QMRKT",
+      "createdAt": "2025-04-01T08:28:01.995Z"
     }
   ],
   "members": [
@@ -88,7 +93,7 @@
     }
   ],
   "counters": {
-    "sessionId": 9,
+    "sessionId": 10,
     "memberId": 6,
     "expenseId": 2
   }

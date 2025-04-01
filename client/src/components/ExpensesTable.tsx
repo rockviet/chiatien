@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Pencil, Trash2, SplitSquareHorizontal } from 'lucide-react';
 import { AddExpenseModal } from './AddExpenseModal';
 import { ExpensesMobileView } from './ExpensesMobileView';
+import { ExportMenu } from './ExportMenu';
 import { Expense } from '@shared/schema';
 import {
   AlertDialog,
@@ -70,14 +71,17 @@ export function ExpensesTable() {
     <>
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-semibold">Chi tiêu</h2>
-        <Button 
-          onClick={() => setShowAddModal(true)}
-          className="bg-primary text-white hover:bg-blue-600 flex items-center"
-          size="sm"
-          disabled={members.length === 0}
-        >
-          <Plus className="mr-1 h-4 w-4" /> Thêm chi tiêu
-        </Button>
+        <div className="flex items-center gap-2">
+          <ExportMenu />
+          <Button 
+            onClick={() => setShowAddModal(true)}
+            className="bg-primary text-white hover:bg-blue-600 flex items-center"
+            size="sm"
+            disabled={members.length === 0}
+          >
+            <Plus className="mr-1 h-4 w-4" /> Thêm chi tiêu
+          </Button>
+        </div>
       </div>
       
       <div className="bg-white rounded-lg shadow overflow-hidden mb-6">
