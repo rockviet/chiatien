@@ -53,128 +53,182 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, []);
 
   const setupWebSocket = () => {
-    // Tạo URL cho kết nối WebSocket dựa trên giao thức hiện tại
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    // Sử dụng window.location.host để lấy cả hostname và port
-    const host = window.location.host;
-    const wsUrl = `${protocol}//${host}/ws`;
-    
-    console.log(`Đang kết nối tới WebSocket tại: ${wsUrl}`);
-    
-    const ws = new WebSocket(wsUrl);
-    console.log("Đối tượng WebSocket đã được tạo:", ws);
-    
-    ws.onopen = () => {
-      console.log("WebSocket connection opened successfully");
-      console.log("WebSocket readyState:", ws.readyState);
-      console.log("WebSocket object properties:", Object.keys(ws));
-      setIsConnected(true);
-      setError(null);
-    };
-    
-    ws.onclose = (event) => {
-      console.log(`WebSocket connection closed. Code: ${event.code}, Reason: ${event.reason}`);
-      console.log("Close event details:", {
-        wasClean: event.wasClean,
-        code: event.code,
-        reason: event.reason,
-        type: event.type
-      });
-      setIsConnected(false);
-      setError("Mất kết nối với máy chủ. Vui lòng tải lại trang.");
-      toast({
-        variant: "destructive",
-        title: "Mất kết nối",
-        description: `Mất kết nối với máy chủ. Mã lỗi: ${event.code}`,
-      });
-    };
-    
-    ws.onerror = (error) => {
-      console.error("WebSocket connection error:", error);
-      console.error("Error type:", error.type);
-      console.error("Error target:", error.target);
+    try {
+      // Tạo URL cho kết nối WebSocket dựa trên giao thức hiện tại
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      // Sử dụng window.location.host để lấy cả hostname và port
+      const host = window.location.host;
+      const wsUrl = `${protocol}//${host}/ws`;
       
-      // Thử kết nối lại sau 3 giây
-      setTimeout(() => {
-        console.log("Đang thử kết nối lại...");
-        setupWebSocket();
-      }, 3000);
+      console.log(`Đang kết nối tới WebSocket tại: ${wsUrl}`);
       
-      setError("Lỗi kết nối với máy chủ.");
-      toast({
-        variant: "destructive",
-        title: "Lỗi kết nối",
-        description: "Lỗi kết nối với máy chủ. Đang thử kết nối lại...",
-      });
-    };
-    
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data) as WebSocketMessage;
-        
-        switch (data.type) {
-          case MessageType.SESSION_DATA:
-            setSessionId(data.payload.session.id);
-            setSessionCode(data.payload.session.code);
-            setMembers(data.payload.members);
-            setExpenses(data.payload.expenses);
-            setIsLoading(false);
-            break;
-            
-          case MessageType.MEMBER_ADDED:
-            setMembers(prev => [...prev, data.payload]);
-            break;
-            
-          case MessageType.MEMBER_UPDATED:
-            setMembers(prev => prev.map(member => 
-              member.id === data.payload.id ? data.payload : member
-            ));
-            break;
-            
-          case MessageType.MEMBER_DELETED:
-            setMembers(prev => prev.filter(member => member.id !== data.payload.id));
-            break;
-            
-          case MessageType.EXPENSE_ADDED:
-            setExpenses(prev => [...prev, data.payload]);
-            break;
-            
-          case MessageType.EXPENSE_UPDATED:
-            setExpenses(prev => prev.map(expense => 
-              expense.id === data.payload.id ? data.payload : expense
-            ));
-            break;
-            
-          case MessageType.EXPENSE_DELETED:
-            setExpenses(prev => prev.filter(expense => expense.id !== data.payload.id));
-            break;
-            
-          case MessageType.ERROR:
-            toast({
-              variant: "destructive",
-              title: "Lỗi",
-              description: data.payload.message,
-            });
-            break;
-        }
-      } catch (error) {
-        console.error('Error parsing WebSocket message:', error);
+      // Đóng kết nối cũ nếu có
+      if (socket && socket.readyState !== WebSocket.CLOSED) {
+        console.log("Đóng kết nối WebSocket cũ");
+        socket.close();
       }
-    };
-    
-    setSocket(ws);
-    return ws;
+      
+      const ws = new WebSocket(wsUrl);
+      console.log("Đối tượng WebSocket đã được tạo:", ws);
+      
+      // Đặt timeout cho kết nối
+      const connectionTimeout = setTimeout(() => {
+        if (ws.readyState !== WebSocket.OPEN) {
+          console.log("Kết nối WebSocket timeout");
+          ws.close();
+        }
+      }, 10000);
+      
+      ws.onopen = () => {
+        console.log("WebSocket connection opened successfully");
+        console.log("WebSocket readyState:", ws.readyState);
+        clearTimeout(connectionTimeout);
+        setIsConnected(true);
+        setError(null);
+        
+        // Sau khi kết nối thành công, gửi ping định kỳ để giữ kết nối
+        const intervalId = setInterval(() => {
+          if (ws.readyState === WebSocket.OPEN) {
+            // Gửi ping message
+            ws.send(JSON.stringify({ type: "PING" }));
+          } else {
+            clearInterval(intervalId);
+          }
+        }, 30000);
+        
+        // Lưu interval ID để xóa sau khi đóng
+        (ws as any).pingInterval = intervalId;
+      };
+      
+      ws.onclose = (event) => {
+        console.log(`WebSocket connection closed. Code: ${event.code}, Reason: ${event.reason}`);
+        console.log("Close event details:", {
+          wasClean: event.wasClean,
+          code: event.code,
+          reason: event.reason,
+          type: event.type
+        });
+        
+        // Xóa interval ping
+        if ((ws as any).pingInterval) {
+          clearInterval((ws as any).pingInterval);
+        }
+        
+        clearTimeout(connectionTimeout);
+        setIsConnected(false);
+        
+        // Nếu kết nối đóng không sạch, thử kết nối lại
+        if (!event.wasClean || event.code === 1006) {
+          console.log("Kết nối không sạch, thử kết nối lại sau 3 giây");
+          setTimeout(() => {
+            console.log("Đang thử kết nối lại...");
+            setupWebSocket();
+          }, 3000);
+          
+          setError("Mất kết nối với máy chủ. Đang thử kết nối lại...");
+          toast({
+            variant: "destructive",
+            title: "Mất kết nối",
+            description: `Mất kết nối với máy chủ. Đang thử kết nối lại...`,
+          });
+        } else {
+          setError("Mất kết nối với máy chủ. Vui lòng tải lại trang.");
+          toast({
+            variant: "destructive",
+            title: "Mất kết nối",
+            description: `Mất kết nối với máy chủ. Mã lỗi: ${event.code}`,
+          });
+        }
+      };
+      
+      ws.onerror = (error) => {
+        console.error("WebSocket connection error:", error);
+        console.error("Error type:", error.type);
+        console.error("Error target:", error.target);
+        
+        clearTimeout(connectionTimeout);
+        
+        // Lỗi kết nối sẽ được xử lý trong onclose, không cần thử kết nối lại ở đây
+        setError("Lỗi kết nối với máy chủ.");
+      };
+      
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data) as WebSocketMessage;
+          
+          switch (data.type) {
+            case MessageType.SESSION_DATA:
+              setSessionId(data.payload.session.id);
+              setSessionCode(data.payload.session.code);
+              setMembers(data.payload.members);
+              setExpenses(data.payload.expenses);
+              setIsLoading(false);
+              break;
+              
+            case MessageType.MEMBER_ADDED:
+              setMembers(prev => [...prev, data.payload]);
+              break;
+              
+            case MessageType.MEMBER_UPDATED:
+              setMembers(prev => prev.map(member => 
+                member.id === data.payload.id ? data.payload : member
+              ));
+              break;
+              
+            case MessageType.MEMBER_DELETED:
+              setMembers(prev => prev.filter(member => member.id !== data.payload.id));
+              break;
+              
+            case MessageType.EXPENSE_ADDED:
+              setExpenses(prev => [...prev, data.payload]);
+              break;
+              
+            case MessageType.EXPENSE_UPDATED:
+              setExpenses(prev => prev.map(expense => 
+                expense.id === data.payload.id ? data.payload : expense
+              ));
+              break;
+              
+            case MessageType.EXPENSE_DELETED:
+              setExpenses(prev => prev.filter(expense => expense.id !== data.payload.id));
+              break;
+              
+            case MessageType.ERROR:
+              toast({
+                variant: "destructive",
+                title: "Lỗi",
+                description: data.payload.message,
+              });
+              break;
+          }
+        } catch (error) {
+          console.error('Error parsing WebSocket message:', error);
+        }
+      };
+      
+      setSocket(ws);
+      return ws;
+    } catch (error) {
+      console.error("Error setting up WebSocket:", error);
+      setError("Lỗi thiết lập kết nối với máy chủ.");
+      return new WebSocket("ws://localhost");  // Return a dummy websocket to prevent null errors
+    }
   };
 
   const sendMessage = (message: WebSocketMessage) => {
     if (socket && socket.readyState === WebSocket.OPEN) {
       socket.send(JSON.stringify(message));
+      return true;
     } else {
       toast({
         variant: "destructive",
         title: "Lỗi kết nối",
-        description: "Mất kết nối với máy chủ. Vui lòng tải lại trang.",
+        description: "Mất kết nối với máy chủ. Đang thử kết nối lại...",
       });
+      
+      // Thử kết nối lại
+      setupWebSocket();
+      return false;
     }
   };
 
@@ -196,14 +250,27 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
     const ws = setupWebSocket();
     
     // Wait for connection to open before sending join message
+    const maxRetries = 20;
+    let retries = 0;
+    
     const checkAndSend = () => {
+      if (retries >= maxRetries) {
+        setError("Không thể kết nối tới máy chủ sau nhiều lần thử.");
+        setIsLoading(false);
+        return;
+      }
+      
       if (ws.readyState === WebSocket.OPEN) {
-        sendMessage({
+        ws.send(JSON.stringify({
           type: MessageType.JOIN_SESSION,
           payload: { code }
-        });
+        }));
+      } else if (ws.readyState === WebSocket.CONNECTING) {
+        retries++;
+        setTimeout(checkAndSend, 300);
       } else {
-        setTimeout(checkAndSend, 100);
+        setError("Lỗi kết nối đến máy chủ.");
+        setIsLoading(false);
       }
     };
     

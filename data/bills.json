@@ -9,12 +9,17 @@
       "id": 2,
       "code": "VAUIKA",
       "createdAt": "2025-04-01T06:42:19.720Z"
+    },
+    {
+      "id": 3,
+      "code": "E-Q_HL",
+      "createdAt": "2025-04-01T06:52:41.582Z"
     }
   ],
   "members": [],
   "expenses": [],
   "counters": {
-    "sessionId": 3,
+    "sessionId": 4,
     "memberId": 1,
     "expenseId": 1
   }
