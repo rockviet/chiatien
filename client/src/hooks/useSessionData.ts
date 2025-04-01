@@ -6,7 +6,8 @@ import {
   calculateSettlements, 
   calculateExpenseSummary,
   Settlement, 
-  ExpenseSummary
+  ExpenseSummary,
+  MemberGroup
 } from '@/utils/calculations';
 
 export function useSessionData() {
@@ -18,10 +19,19 @@ export function useSessionData() {
     largestExpense: null,
     expensesByCategory: []
   });
+  
+  // State cho các nhóm thành viên
+  const [memberGroups, setMemberGroups] = useState<MemberGroup[]>([]);
+  const [isGroupingEnabled, setIsGroupingEnabled] = useState(false);
 
   useEffect(() => {
     if (members.length > 0 && expenses.length > 0) {
-      setSettlements(calculateSettlements(members, expenses));
+      // Tính toán các giao dịch thanh toán với hoặc không có nhóm
+      if (isGroupingEnabled && memberGroups.length > 0) {
+        setSettlements(calculateSettlements(members, expenses, memberGroups));
+      } else {
+        setSettlements(calculateSettlements(members, expenses));
+      }
       setSummary(calculateExpenseSummary(expenses));
     } else {
       setSettlements([]);
@@ -32,7 +42,7 @@ export function useSessionData() {
         expensesByCategory: []
       });
     }
-  }, [members, expenses]);
+  }, [members, expenses, memberGroups, isGroupingEnabled]);
 
   const getMemberById = (id: number): Member | undefined => {
     return members.find(member => member.id === id);
@@ -59,11 +69,49 @@ export function useSessionData() {
     
     return splitAmounts;
   };
+  
+  // Thêm một nhóm thành viên mới
+  const addMemberGroup = (group: MemberGroup) => {
+    setMemberGroups(prev => [...prev, group]);
+  };
+  
+  // Xóa một nhóm thành viên
+  const removeMemberGroup = (groupId: string) => {
+    setMemberGroups(prev => prev.filter(group => group.id !== groupId));
+  };
+  
+  // Cập nhật một nhóm thành viên
+  const updateMemberGroup = (groupId: string, updatedGroup: Partial<MemberGroup>) => {
+    setMemberGroups(prev => 
+      prev.map(group => 
+        group.id === groupId 
+          ? { ...group, ...updatedGroup } 
+          : group
+      )
+    );
+  };
+  
+  // Bật/tắt tính năng nhóm thành viên
+  const toggleGrouping = (enabled: boolean) => {
+    setIsGroupingEnabled(enabled);
+  };
+  
+  // Lấy nhóm của một thành viên
+  const getMemberGroup = (memberId: number): MemberGroup | undefined => {
+    return memberGroups.find(group => group.memberIds.includes(memberId));
+  };
 
   return {
     settlements,
     summary,
     getMemberById,
-    getMemberSplitAmounts
+    getMemberSplitAmounts,
+    memberGroups,
+    isGroupingEnabled,
+    addMemberGroup,
+    removeMemberGroup,
+    updateMemberGroup,
+    toggleGrouping,
+    getMemberGroup
   };
 }

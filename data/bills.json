@@ -94,6 +94,11 @@
       "id": 19,
       "code": "N0QJZ4",
       "createdAt": "2025-04-01T09:31:54.562Z"
+    },
+    {
+      "id": 20,
+      "code": "C7F4QP",
+      "createdAt": "2025-04-01T10:23:30.458Z"
     }
   ],
   "members": [
@@ -203,7 +208,7 @@
     }
   ],
   "counters": {
-    "sessionId": 20,
+    "sessionId": 21,
     "memberId": 18,
     "expenseId": 2
   }
