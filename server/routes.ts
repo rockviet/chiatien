@@ -1,0 +1,342 @@
+import type { Express } from "express";
+import { createServer, type Server } from "http";
+import { storage } from "./storage";
+import { WebSocketServer, WebSocket } from "ws";
+import { MessageType, WebSocketMessage } from "@shared/schema";
+import { z } from "zod";
+
+// Map to store all active WebSocket connections by session code
+const sessionClients: Map<string, Set<WebSocket>> = new Map();
+
+// Helper to broadcast message to all clients in a session
+function broadcastToSession(sessionCode: string, message: WebSocketMessage) {
+  const clients = sessionClients.get(sessionCode);
+  if (!clients) return;
+
+  clients.forEach(client => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify(message));
+    }
+  });
+}
+
+// Helper to send complete session data to a client
+async function sendSessionData(ws: WebSocket, sessionCode: string) {
+  try {
+    const session = await storage.getSessionByCode(sessionCode);
+    if (!session) return;
+
+    const members = await storage.getMembers(session.id);
+    const expenses = await storage.getExpenses(session.id);
+
+    const message: WebSocketMessage = {
+      type: MessageType.SESSION_DATA,
+      payload: {
+        session,
+        members,
+        expenses
+      }
+    };
+
+    ws.send(JSON.stringify(message));
+  } catch (error) {
+    console.error("Error sending session data:", error);
+  }
+}
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  const httpServer = createServer(app);
+
+  // Setup API routes with /api prefix
+  app.get("/api/sessions/:code", async (req, res) => {
+    try {
+      const { code } = req.params;
+      const session = await storage.getSessionByCode(code);
+      
+      if (!session) {
+        return res.status(404).json({ message: "Phiên không tồn tại" });
+      }
+      
+      const members = await storage.getMembers(session.id);
+      const expenses = await storage.getExpenses(session.id);
+      
+      res.json({ session, members, expenses });
+    } catch (error) {
+      res.status(500).json({ message: "Lỗi máy chủ" });
+    }
+  });
+
+  app.post("/api/sessions", async (req, res) => {
+    try {
+      const session = await storage.createSession();
+      res.status(201).json(session);
+    } catch (error) {
+      res.status(500).json({ message: "Lỗi máy chủ" });
+    }
+  });
+
+  // Setup WebSocket Server (on a distinct path)
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+
+  wss.on('connection', (ws) => {
+    let currentSessionCode: string | null = null;
+
+    ws.on('message', async (message) => {
+      try {
+        const data = JSON.parse(message.toString()) as WebSocketMessage;
+        
+        switch (data.type) {
+          case MessageType.JOIN_SESSION: {
+            const sessionCode = data.payload.code;
+            
+            // Check if session exists
+            const session = await storage.getSessionByCode(sessionCode);
+            if (!session) {
+              ws.send(JSON.stringify({
+                type: MessageType.ERROR,
+                payload: { message: "Phiên không tồn tại" }
+              }));
+              return;
+            }
+            
+            // Save the client in the sessions map
+            if (!sessionClients.has(sessionCode)) {
+              sessionClients.set(sessionCode, new Set());
+            }
+            sessionClients.get(sessionCode)?.add(ws);
+            currentSessionCode = sessionCode;
+            
+            // Send complete session data to the client
+            await sendSessionData(ws, sessionCode);
+            break;
+          }
+          
+          case MessageType.MEMBER_ADDED: {
+            if (!currentSessionCode) break;
+            
+            const schema = z.object({
+              sessionId: z.number(),
+              name: z.string().min(1)
+            });
+            
+            const result = schema.safeParse(data.payload);
+            if (!result.success) {
+              ws.send(JSON.stringify({
+                type: MessageType.ERROR,
+                payload: { message: "Dữ liệu không hợp lệ" }
+              }));
+              break;
+            }
+            
+            const member = await storage.createMember(result.data);
+            broadcastToSession(currentSessionCode, {
+              type: MessageType.MEMBER_ADDED,
+              payload: member
+            });
+            break;
+          }
+          
+          case MessageType.MEMBER_UPDATED: {
+            if (!currentSessionCode) break;
+            
+            const schema = z.object({
+              id: z.number(),
+              name: z.string().min(1)
+            });
+            
+            const result = schema.safeParse(data.payload);
+            if (!result.success) {
+              ws.send(JSON.stringify({
+                type: MessageType.ERROR,
+                payload: { message: "Dữ liệu không hợp lệ" }
+              }));
+              break;
+            }
+            
+            const member = await storage.updateMember(result.data.id, result.data.name);
+            if (!member) {
+              ws.send(JSON.stringify({
+                type: MessageType.ERROR,
+                payload: { message: "Thành viên không tồn tại" }
+              }));
+              break;
+            }
+            
+            broadcastToSession(currentSessionCode, {
+              type: MessageType.MEMBER_UPDATED,
+              payload: member
+            });
+            break;
+          }
+          
+          case MessageType.MEMBER_DELETED: {
+            if (!currentSessionCode) break;
+            
+            const schema = z.object({
+              id: z.number()
+            });
+            
+            const result = schema.safeParse(data.payload);
+            if (!result.success) {
+              ws.send(JSON.stringify({
+                type: MessageType.ERROR,
+                payload: { message: "Dữ liệu không hợp lệ" }
+              }));
+              break;
+            }
+            
+            const success = await storage.deleteMember(result.data.id);
+            if (!success) {
+              ws.send(JSON.stringify({
+                type: MessageType.ERROR,
+                payload: { message: "Thành viên không tồn tại" }
+              }));
+              break;
+            }
+            
+            broadcastToSession(currentSessionCode, {
+              type: MessageType.MEMBER_DELETED,
+              payload: { id: result.data.id }
+            });
+            break;
+          }
+          
+          case MessageType.EXPENSE_ADDED: {
+            if (!currentSessionCode) break;
+            
+            const schema = z.object({
+              sessionId: z.number(),
+              name: z.string().min(1),
+              amount: z.number().positive(),
+              payerId: z.number(),
+              participants: z.array(z.number())
+            });
+            
+            const result = schema.safeParse(data.payload);
+            if (!result.success) {
+              ws.send(JSON.stringify({
+                type: MessageType.ERROR,
+                payload: { message: "Dữ liệu không hợp lệ" }
+              }));
+              break;
+            }
+            
+            // Validate that participants list is not empty
+            if (result.data.participants.length === 0) {
+              ws.send(JSON.stringify({
+                type: MessageType.ERROR,
+                payload: { message: "Phải có ít nhất một người tham gia" }
+              }));
+              break;
+            }
+            
+            const expense = await storage.createExpense(result.data);
+            broadcastToSession(currentSessionCode, {
+              type: MessageType.EXPENSE_ADDED,
+              payload: expense
+            });
+            break;
+          }
+          
+          case MessageType.EXPENSE_UPDATED: {
+            if (!currentSessionCode) break;
+            
+            const schema = z.object({
+              id: z.number(),
+              name: z.string().min(1).optional(),
+              amount: z.number().positive().optional(),
+              payerId: z.number().optional(),
+              participants: z.array(z.number()).optional()
+            });
+            
+            const result = schema.safeParse(data.payload);
+            if (!result.success) {
+              ws.send(JSON.stringify({
+                type: MessageType.ERROR,
+                payload: { message: "Dữ liệu không hợp lệ" }
+              }));
+              break;
+            }
+            
+            // Validate that participants list is not empty if provided
+            if (result.data.participants && result.data.participants.length === 0) {
+              ws.send(JSON.stringify({
+                type: MessageType.ERROR,
+                payload: { message: "Phải có ít nhất một người tham gia" }
+              }));
+              break;
+            }
+            
+            const { id, ...updateData } = result.data;
+            const expense = await storage.updateExpense(id, updateData);
+            
+            if (!expense) {
+              ws.send(JSON.stringify({
+                type: MessageType.ERROR,
+                payload: { message: "Chi tiêu không tồn tại" }
+              }));
+              break;
+            }
+            
+            broadcastToSession(currentSessionCode, {
+              type: MessageType.EXPENSE_UPDATED,
+              payload: expense
+            });
+            break;
+          }
+          
+          case MessageType.EXPENSE_DELETED: {
+            if (!currentSessionCode) break;
+            
+            const schema = z.object({
+              id: z.number()
+            });
+            
+            const result = schema.safeParse(data.payload);
+            if (!result.success) {
+              ws.send(JSON.stringify({
+                type: MessageType.ERROR,
+                payload: { message: "Dữ liệu không hợp lệ" }
+              }));
+              break;
+            }
+            
+            const success = await storage.deleteExpense(result.data.id);
+            if (!success) {
+              ws.send(JSON.stringify({
+                type: MessageType.ERROR,
+                payload: { message: "Chi tiêu không tồn tại" }
+              }));
+              break;
+            }
+            
+            broadcastToSession(currentSessionCode, {
+              type: MessageType.EXPENSE_DELETED,
+              payload: { id: result.data.id }
+            });
+            break;
+          }
+        }
+      } catch (error) {
+        console.error('Error processing WebSocket message:', error);
+        ws.send(JSON.stringify({
+          type: MessageType.ERROR,
+          payload: { message: "Lỗi khi xử lý yêu cầu" }
+        }));
+      }
+    });
+
+    ws.on('close', () => {
+      if (currentSessionCode && sessionClients.has(currentSessionCode)) {
+        sessionClients.get(currentSessionCode)?.delete(ws);
+        
+        // Clean up empty session
+        if (sessionClients.get(currentSessionCode)?.size === 0) {
+          sessionClients.delete(currentSessionCode);
+        }
+      }
+    });
+  });
+
+  return httpServer;
+}
