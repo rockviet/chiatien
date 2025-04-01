@@ -104,6 +104,11 @@
       "id": 21,
       "code": "IEXO8M",
       "createdAt": "2025-04-01T10:09:16.017Z"
+    },
+    {
+      "id": 22,
+      "code": "HUC8HN",
+      "createdAt": "2025-04-01T10:09:24.041Z"
     }
   ],
   "members": [
@@ -235,6 +240,24 @@
       "name": "Lộc",
       "sessionId": 20,
       "slots": 1
+    },
+    {
+      "id": 26,
+      "name": "Hải",
+      "sessionId": 22,
+      "slots": 2
+    },
+    {
+      "id": 28,
+      "name": "Thảo",
+      "sessionId": 22,
+      "slots": 1
+    },
+    {
+      "id": 29,
+      "name": "Tân",
+      "sessionId": 22,
+      "slots": 2
     }
   ],
   "expenses": [
@@ -291,11 +314,26 @@
       "customAmounts": {},
       "isCustomSplit": false,
       "createdAt": "2025-04-01T10:05:34.433Z"
+    },
+    {
+      "id": 4,
+      "name": "a",
+      "sessionId": 22,
+      "amount": 500,
+      "payerId": 26,
+      "participants": [
+        26,
+        28,
+        29
+      ],
+      "customAmounts": {},
+      "isCustomSplit": false,
+      "createdAt": "2025-04-01T10:15:23.953Z"
     }
   ],
   "counters": {
-    "sessionId": 22,
-    "memberId": 26,
-    "expenseId": 4
+    "sessionId": 23,
+    "memberId": 31,
+    "expenseId": 5
   }
 }
