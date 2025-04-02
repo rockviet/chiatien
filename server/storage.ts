@@ -1,6 +1,6 @@
 import { 
   Session, InsertSession, Member, InsertMember, 
-  Expense, InsertExpense, sessions, members, expenses 
+  Expense, InsertExpense, sessions, members, expenses, SessionData 
 } from "@shared/schema";
 import { nanoid } from "nanoid";
 
@@ -8,6 +8,8 @@ export interface IStorage {
   // Session methods
   createSession(): Promise<Session>;
   getSessionByCode(code: string): Promise<Session | undefined>;
+  updateSessionData(sessionId: number, sessionData: SessionData): Promise<Session | undefined>;
+  getSessionData(sessionId: number): Promise<SessionData | undefined>;
   
   // Member methods
   getMembers(sessionId: number): Promise<Member[]>;
@@ -20,7 +22,7 @@ export interface IStorage {
   getExpenses(sessionId: number): Promise<Expense[]>;
   getExpense(id: number): Promise<Expense | undefined>;
   createExpense(expense: InsertExpense): Promise<Expense>;
-  updateExpense(id: number, expense: Partial<InsertExpense>): Promise<Expense | undefined>;
+  updateExpense(id: number, expenseData: Partial<InsertExpense>): Promise<Expense | undefined>;
   deleteExpense(id: number): Promise<boolean>;
 }
 

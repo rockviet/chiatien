@@ -24,7 +24,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 
 export function ExpensesTable() {
   const { members, expenses, deleteExpense } = useSession();
-  const { getMemberById, getMemberSplitAmounts } = useSessionData();
+  const { getMemberById, getMemberSplitAmounts, getMemberBalance } = useSessionData();
   const { isMobileOrTablet } = useResponsive();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -55,17 +55,19 @@ export function ExpensesTable() {
 
   // Calculate totals
   const totalAmount = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-  const memberTotals: { [key: number]: number } = {};
-  
-  members.forEach(member => {
-    memberTotals[member.id] = 0;
-  });
-  
-  expenses.forEach(expense => {
-    const splitAmounts = getMemberSplitAmounts(expense);
-    for (const [memberId, amount] of Object.entries(splitAmounts)) {
-      memberTotals[Number(memberId)] += amount;
-    }
+  const memberTotals = members.map(member => {
+    const totalSpent = expenses.reduce((total, expense) => {
+      const splitAmounts = getMemberSplitAmounts(expense);
+      return total + (splitAmounts[member.id] || 0);
+    }, 0);
+
+    const balance = getMemberBalance(member.id);
+
+    return {
+      member,
+      totalSpent,
+      balance
+    };
   });
 
   return (
@@ -213,7 +215,7 @@ export function ExpensesTable() {
                   <td className="py-3 px-4"></td>
                   {members.map(member => (
                     <td key={member.id} className="py-3 px-4 text-sm font-semibold text-center">
-                      {formatVietnameseCurrency(memberTotals[member.id])}
+                      {formatVietnameseCurrency(memberTotals[member.id].totalSpent)}
                     </td>
                   ))}
                   <td className="py-3 px-4"></td>

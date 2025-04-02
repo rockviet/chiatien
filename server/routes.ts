@@ -7,6 +7,8 @@ import { z } from "zod";
 
 // Map to store all active WebSocket connections by session code
 const sessionClients: Map<string, Set<WebSocket>> = new Map();
+// Map to store session ID for each WebSocket connection
+const clientSessions: Map<WebSocket, number> = new Map();
 
 // Helper to broadcast message to all clients in a session
 function broadcastToSession(sessionCode: string, message: WebSocketMessage) {
@@ -28,13 +30,15 @@ async function sendSessionData(ws: WebSocket, sessionCode: string) {
 
     const members = await storage.getMembers(session.id);
     const expenses = await storage.getExpenses(session.id);
+    const sessionData = await storage.getSessionData(session.id);
 
     const message: WebSocketMessage = {
       type: MessageType.SESSION_DATA,
       payload: {
         session,
         members,
-        expenses
+        expenses,
+        sessionData
       }
     };
 
@@ -115,13 +119,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('WebSocket error:', error);
     });
 
-    ws.on('message', async (message) => {
-      try {
-        const data = JSON.parse(message.toString()) as WebSocketMessage;
+    ws.on('close', () => {
+      // Clean up session mappings
+      clientSessions.delete(ws);
+      if (currentSessionCode && sessionClients.has(currentSessionCode)) {
+        sessionClients.get(currentSessionCode)?.delete(ws);
         
-        switch (data.type) {
+        // Clean up empty session
+        if (sessionClients.get(currentSessionCode)?.size === 0) {
+          sessionClients.delete(currentSessionCode);
+        }
+      }
+    });
+
+    ws.on('message', async (rawData) => {
+      try {
+        const message = JSON.parse(rawData.toString()) as WebSocketMessage;
+        const sessionId = clientSessions.get(ws);
+
+        if (!sessionId && message.type !== MessageType.JOIN_SESSION) {
+          ws.send(JSON.stringify({
+            type: MessageType.ERROR,
+            payload: { message: 'Not connected to any session' }
+          }));
+          return;
+        }
+
+        switch (message.type) {
           case MessageType.JOIN_SESSION: {
-            const sessionCode = data.payload.code;
+            const sessionCode = message.payload.code;
             
             // Check if session exists
             const session = await storage.getSessionByCode(sessionCode);
@@ -140,6 +166,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             sessionClients.get(sessionCode)?.add(ws);
             currentSessionCode = sessionCode;
             
+            // Save session ID for this client
+            clientSessions.set(ws, session.id);
+            
             // Send complete session data to the client
             await sendSessionData(ws, sessionCode);
             break;
@@ -153,7 +182,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               name: z.string().min(1)
             });
             
-            const result = schema.safeParse(data.payload);
+            const result = schema.safeParse(message.payload);
             if (!result.success) {
               ws.send(JSON.stringify({
                 type: MessageType.ERROR,
@@ -178,7 +207,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               name: z.string().min(1)
             });
             
-            const result = schema.safeParse(data.payload);
+            const result = schema.safeParse(message.payload);
             if (!result.success) {
               ws.send(JSON.stringify({
                 type: MessageType.ERROR,
@@ -210,7 +239,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               id: z.number()
             });
             
-            const result = schema.safeParse(data.payload);
+            const result = schema.safeParse(message.payload);
             if (!result.success) {
               ws.send(JSON.stringify({
                 type: MessageType.ERROR,
@@ -248,7 +277,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               isCustomSplit: z.boolean().optional().default(false)
             });
             
-            const result = schema.safeParse(data.payload);
+            const result = schema.safeParse(message.payload);
             if (!result.success) {
               ws.send(JSON.stringify({
                 type: MessageType.ERROR,
@@ -287,7 +316,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               isCustomSplit: z.boolean().optional()
             });
             
-            const result = schema.safeParse(data.payload);
+            const result = schema.safeParse(message.payload);
             if (!result.success) {
               ws.send(JSON.stringify({
                 type: MessageType.ERROR,
@@ -330,7 +359,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               id: z.number()
             });
             
-            const result = schema.safeParse(data.payload);
+            const result = schema.safeParse(message.payload);
             if (!result.success) {
               ws.send(JSON.stringify({
                 type: MessageType.ERROR,
@@ -354,24 +383,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
             break;
           }
+          
+          case MessageType.SESSION_DATA_UPDATED:
+            if (!sessionId || !currentSessionCode) break;
+            
+            const updatedSession = await storage.updateSessionData(sessionId, message.payload);
+            if (updatedSession) {
+              // Broadcast to all clients in the session
+              broadcastToSession(currentSessionCode, {
+                type: MessageType.SESSION_DATA_UPDATED,
+                payload: updatedSession.sessionData
+              });
+            }
+            break;
         }
       } catch (error) {
-        console.error('Error processing WebSocket message:', error);
+        console.error('Error processing message:', error);
         ws.send(JSON.stringify({
           type: MessageType.ERROR,
-          payload: { message: "Lỗi khi xử lý yêu cầu" }
+          payload: { message: 'Internal server error' }
         }));
-      }
-    });
-
-    ws.on('close', () => {
-      if (currentSessionCode && sessionClients.has(currentSessionCode)) {
-        sessionClients.get(currentSessionCode)?.delete(ws);
-        
-        // Clean up empty session
-        if (sessionClients.get(currentSessionCode)?.size === 0) {
-          sessionClients.delete(currentSessionCode);
-        }
       }
     });
   });

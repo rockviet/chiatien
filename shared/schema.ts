@@ -9,6 +9,11 @@ export const sessions = sqliteTable("sessions", {
   code: text("code").notNull().unique(),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(sql`CURRENT_TIMESTAMP`),
   lastAccessTime: integer("last_access_time", { mode: "timestamp" }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  sessionData: blob("session_data", { mode: "json" }).$type<SessionData>().default({
+    memberGroups: [],
+    isGroupingEnabled: false,
+    settlements: []
+  }),
 });
 
 // Member table to store group members for each session
@@ -71,10 +76,32 @@ export enum MessageType {
   EXPENSE_UPDATED = 'EXPENSE_UPDATED',
   EXPENSE_DELETED = 'EXPENSE_DELETED',
   SESSION_DATA = 'SESSION_DATA',
+  SESSION_DATA_UPDATED = 'SESSION_DATA_UPDATED',
   ERROR = 'ERROR'
 }
 
 export interface WebSocketMessage {
   type: MessageType;
   payload: any;
+}
+
+// Types for session data
+export interface MemberGroup {
+  id: string;
+  name: string;
+  memberIds: number[];
+}
+
+export interface Settlement {
+  fromId: number;
+  toId: number;
+  amount: number;
+  fromGroupId?: string;
+  toGroupId?: string;
+}
+
+export interface SessionData {
+  memberGroups: MemberGroup[];
+  isGroupingEnabled: boolean;
+  settlements: Settlement[];
 }

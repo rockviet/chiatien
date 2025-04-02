@@ -3,7 +3,8 @@ import { nanoid } from "nanoid";
 import { db } from "./db";
 import { 
   Session, InsertSession, Member, InsertMember, 
-  Expense, InsertExpense, sessions, members, expenses 
+  Expense, InsertExpense, sessions, members, expenses,
+  SessionData
 } from "@shared/schema";
 import { IStorage } from "./storage";
 
@@ -12,7 +13,14 @@ export class TursoStorage implements IStorage {
   async createSession(): Promise<Session> {
     const code = nanoid(6).toUpperCase();
     const [session] = await db.insert(sessions)
-      .values({ code })
+      .values({ 
+        code,
+        sessionData: {
+          memberGroups: [],
+          isGroupingEnabled: false,
+          settlements: []
+        }
+      })
       .returning();
     return session;
   }
@@ -30,6 +38,21 @@ export class TursoStorage implements IStorage {
     }
 
     return session;
+  }
+
+  async updateSessionData(sessionId: number, sessionData: SessionData): Promise<Session | undefined> {
+    const [updatedSession] = await db.update(sessions)
+      .set({ sessionData })
+      .where(eq(sessions.id, sessionId))
+      .returning();
+    return updatedSession;
+  }
+
+  async getSessionData(sessionId: number): Promise<SessionData | undefined> {
+    const [session] = await db.select()
+      .from(sessions)
+      .where(eq(sessions.id, sessionId));
+    return session?.sessionData || undefined;
   }
 
   // Member methods

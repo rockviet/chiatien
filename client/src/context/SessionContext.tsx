@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
-import { MessageType, WebSocketMessage, Member, Expense, Session } from '@shared/schema';
+import { MessageType, WebSocketMessage, Member, Expense, Session, SessionData } from '@shared/schema';
 import { useToast } from '@/hooks/use-toast';
 
 interface SessionContextType {
@@ -9,6 +9,7 @@ interface SessionContextType {
   isConnected: boolean;
   isLoading: boolean;
   error: string | null;
+  sessionData: SessionData;
   sendMessage: (message: WebSocketMessage) => void;
   joinSession: (code: string) => void;
   createSession: () => void;
@@ -45,6 +46,11 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [sessionCode, setSessionCode] = useState<string | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [sessionData, setSessionData] = useState<SessionData>({
+    memberGroups: [],
+    isGroupingEnabled: false,
+    settlements: []
+  });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -176,7 +182,15 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
               setSessionCode(data.payload.session.code);
               setMembers(data.payload.members);
               setExpenses(data.payload.expenses);
+              setSessionData(data.payload.sessionData);
               setIsLoading(false);
+              break;
+              
+            case MessageType.SESSION_DATA_UPDATED:
+              // Cập nhật sessionData khi nhận được từ server
+              if (data.payload) {
+                setSessionData(data.payload);
+              }
               break;
               
             case MessageType.MEMBER_ADDED:
@@ -216,7 +230,7 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
               break;
           }
         } catch (error) {
-          console.error('Error parsing WebSocket message:', error);
+          console.error('Error processing WebSocket message:', error);
         }
       };
       
@@ -396,6 +410,7 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
     isConnected,
     isLoading,
     error,
+    sessionData,
     sendMessage,
     joinSession,
     createSession,
