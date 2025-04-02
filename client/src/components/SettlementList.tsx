@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MemberGroup } from '@/utils/calculations';
+import { formatVietnameseCurrency } from '@/utils/format';
 
 export function SettlementList() {
   const { members } = useSession();
@@ -204,7 +205,9 @@ export function SettlementList() {
                     )}
                   </span>
                 </div>
-                <span className="text-right font-medium">{settlement.amount} nghìn VNĐ</span>
+                <span className="text-right font-medium">
+                  {formatVietnameseCurrency(settlement.amount)}
+                </span>
               </li>
             );
           })}

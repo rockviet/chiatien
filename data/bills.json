@@ -52,58 +52,23 @@
     },
     {
       "id": 11,
-      "code": "ZPH0QS",
-      "createdAt": "2025-04-01T08:42:36.061Z"
+      "code": "XSTRPY",
+      "createdAt": "2025-04-01T08:43:35.403Z"
     },
     {
       "id": 12,
-      "code": "HLGBX8",
-      "createdAt": "2025-04-01T09:04:36.066Z"
+      "code": "WJCTGA",
+      "createdAt": "2025-04-01T11:46:44.661Z"
     },
     {
       "id": 13,
-      "code": "EW4O7E",
-      "createdAt": "2025-04-01T09:10:23.207Z"
+      "code": "1EREXX",
+      "createdAt": "2025-04-01T11:51:12.795Z"
     },
     {
       "id": 14,
-      "code": "JEN9XL",
-      "createdAt": "2025-04-01T09:17:22.265Z"
-    },
-    {
-      "id": 15,
-      "code": "VOPIG1",
-      "createdAt": "2025-04-01T09:17:25.013Z"
-    },
-    {
-      "id": 16,
-      "code": "ZSY0NK",
-      "createdAt": "2025-04-01T09:28:27.468Z"
-    },
-    {
-      "id": 17,
-      "code": "HLPL9V",
-      "createdAt": "2025-04-01T09:28:31.124Z"
-    },
-    {
-      "id": 18,
-      "code": "CSYW5P",
-      "createdAt": "2025-04-01T09:31:51.103Z"
-    },
-    {
-      "id": 19,
-      "code": "N0QJZ4",
-      "createdAt": "2025-04-01T09:31:54.562Z"
-    },
-    {
-      "id": 20,
-      "code": "C7F4QP",
-      "createdAt": "2025-04-01T10:23:30.458Z"
-    },
-    {
-      "id": 21,
-      "code": "LOPTOL",
-      "createdAt": "2025-04-01T10:25:31.884Z"
+      "code": "SZ-BCB",
+      "createdAt": "2025-04-01T11:55:16.991Z"
     }
   ],
   "members": [
@@ -134,63 +99,58 @@
     },
     {
       "id": 6,
-      "name": "Việt",
-      "sessionId": 13
+      "name": "Hải",
+      "sessionId": 11
     },
     {
       "id": 7,
-      "name": "Thảo",
-      "sessionId": 13
+      "name": "A Quang",
+      "sessionId": 11
     },
     {
       "id": 8,
-      "name": "Hải",
-      "sessionId": 13
+      "name": "Thảo",
+      "sessionId": 11
     },
     {
       "id": 9,
-      "name": "Tân",
-      "sessionId": 13
+      "name": "VIệt",
+      "sessionId": 11
     },
     {
       "id": 10,
-      "name": "a",
-      "sessionId": 15
+      "name": "Tân",
+      "sessionId": 11
     },
     {
       "id": 11,
-      "name": "b",
-      "sessionId": 15
+      "name": "Trang",
+      "sessionId": 11
     },
     {
       "id": 12,
-      "name": "c",
-      "sessionId": 15
+      "name": "Lộc",
+      "sessionId": 11
     },
     {
       "id": 13,
-      "name": "d",
-      "sessionId": 15
-    },
-    {
-      "id": 14,
-      "name": "A",
-      "sessionId": 17
+      "name": "Bích",
+      "sessionId": 11
     },
     {
       "id": 15,
-      "name": "B",
-      "sessionId": 17
+      "name": "Hoàng",
+      "sessionId": 11
     },
     {
       "id": 16,
-      "name": "C",
-      "sessionId": 17
+      "name": "Linh",
+      "sessionId": 11
     },
     {
       "id": 17,
-      "name": "D",
-      "sessionId": 17
+      "name": "Thùy",
+      "sessionId": 11
     }
   ],
   "expenses": [
@@ -210,11 +170,167 @@
       "customAmounts": {},
       "isCustomSplit": false,
       "createdAt": "2025-04-01T08:16:14.868Z"
+    },
+    {
+      "id": 2,
+      "name": "Xe SG-BL",
+      "sessionId": 11,
+      "amount": 1750,
+      "payerId": 13,
+      "participants": [
+        8,
+        9,
+        12,
+        13,
+        15,
+        16,
+        17
+      ],
+      "customAmounts": {},
+      "isCustomSplit": false,
+      "createdAt": "2025-04-01T08:45:46.929Z"
+    },
+    {
+      "id": 3,
+      "name": "Xe BL-SG",
+      "sessionId": 11,
+      "amount": 1500,
+      "payerId": 13,
+      "participants": [
+        8,
+        9,
+        12,
+        13,
+        16,
+        17
+      ],
+      "customAmounts": {},
+      "isCustomSplit": false,
+      "createdAt": "2025-04-01T08:46:24.137Z"
+    },
+    {
+      "id": 4,
+      "name": "Nước dừa, trái cây",
+      "sessionId": 11,
+      "amount": 216,
+      "payerId": 16,
+      "participants": [
+        6,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        15,
+        16,
+        17
+      ],
+      "customAmounts": {},
+      "isCustomSplit": false,
+      "createdAt": "2025-04-01T08:47:13.031Z"
+    },
+    {
+      "id": 5,
+      "name": "Cháo lươn",
+      "sessionId": 11,
+      "amount": 235,
+      "payerId": 10,
+      "participants": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        15
+      ],
+      "customAmounts": {},
+      "isCustomSplit": false,
+      "createdAt": "2025-04-01T08:47:39.307Z"
+    },
+    {
+      "id": 6,
+      "name": "Bánh, Rau câu",
+      "sessionId": 11,
+      "amount": 420,
+      "payerId": 6,
+      "participants": [
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        15,
+        16,
+        17
+      ],
+      "customAmounts": {},
+      "isCustomSplit": false,
+      "createdAt": "2025-04-01T08:48:20.049Z"
+    },
+    {
+      "id": 7,
+      "name": "Ăn chơi trên đảo",
+      "sessionId": 11,
+      "amount": 8400,
+      "payerId": 6,
+      "participants": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        15,
+        16,
+        17
+      ],
+      "customAmounts": {
+        "6": 800,
+        "7": 800,
+        "8": 800,
+        "9": 800,
+        "10": 800,
+        "11": 800,
+        "12": 800,
+        "13": 800,
+        "15": 800,
+        "16": 600,
+        "17": 600
+      },
+      "isCustomSplit": true,
+      "createdAt": "2025-04-01T08:52:51.860Z"
+    },
+    {
+      "id": 8,
+      "name": "Sầu riêng",
+      "sessionId": 11,
+      "amount": 1080,
+      "payerId": 12,
+      "participants": [
+        12,
+        10,
+        9
+      ],
+      "customAmounts": {
+        "9": 270,
+        "10": 540,
+        "12": 270
+      },
+      "isCustomSplit": true,
+      "createdAt": "2025-04-01T08:53:55.028Z"
     }
   ],
   "counters": {
-    "sessionId": 22,
+    "sessionId": 15,
     "memberId": 18,
-    "expenseId": 2
+    "expenseId": 9
   }
 }

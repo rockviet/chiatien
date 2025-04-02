@@ -1,5 +1,6 @@
 import { useSessionData } from '@/hooks/useSessionData';
 import { ExportMenu } from './ExportMenu';
+import { formatVietnameseCurrency } from '@/utils/format';
 
 export function StatsSummary() {
   const { summary } = useSessionData();
@@ -15,7 +16,7 @@ export function StatsSummary() {
         <div className="bg-gray-50 p-4 rounded-lg">
           <div className="text-sm text-gray-500">Tổng chi tiêu</div>
           <div className="text-2xl font-bold text-primary mt-1">
-            {summary.totalAmount} nghìn VNĐ
+            {formatVietnameseCurrency(summary.totalAmount)}
           </div>
         </div>
         
@@ -30,7 +31,7 @@ export function StatsSummary() {
           <div className="text-sm text-gray-500">Chi tiêu lớn nhất</div>
           <div className="text-lg font-bold text-primary mt-1">
             {summary.largestExpense 
-              ? `${summary.largestExpense.name}: ${summary.largestExpense.amount} nghìn VNĐ`
+              ? `${summary.largestExpense.name}: ${formatVietnameseCurrency(summary.largestExpense.amount)}`
               : "Chưa có chi tiêu"}
           </div>
         </div>

@@ -76,7 +76,7 @@ export function ExpenseChart() {
             callbacks: {
               label: function(context) {
                 const value = context.raw as number;
-                return `${context.label}: ${value} nghìn VNĐ`;
+                return `${context.label}: ${value} K`;
               }
             }
           }

@@ -55,9 +55,9 @@ export default function Home() {
     <div className="min-h-screen flex flex-col bg-gray-100 text-gray-800">
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 flex items-center justify-between">
+        <div className="px-4 py-4 sm:px-6 flex items-center justify-between">
           <div className="flex items-center">
-            <h1 className="text-xl font-bold text-primary">Chia Tiền Nhóm</h1>
+            <h1 className="text-xl font-bold text-primary">Bi Lắc 5.0</h1>
           </div>
           <div className="flex items-center">
             <SessionCode />
@@ -67,10 +67,10 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="flex-grow px-4 py-6">
-        <div className="max-w-7xl mx-auto">
+        <div className="w-full">
           {/* Tabs */}
           <Tabs defaultValue="expenses" value={activeTab} onValueChange={setActiveTab} className="mb-6">
-            <TabsList className="border-b border-gray-200 w-full justify-start rounded-none bg-transparent h-auto">
+            <TabsList className="border-b border-gray-200 w-full justify-center rounded-none bg-transparent h-auto">
               <TabsTrigger 
                 value="expenses" 
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent py-4 px-1 mr-8"
@@ -135,6 +135,9 @@ export default function Home() {
           </Tabs>
         </div>
       </main>
+      <footer className="py-4 text-center text-sm text-gray-500 mt-8">
+        Made with ❤️ by @viet241
+      </footer>
     </div>
   );
 }

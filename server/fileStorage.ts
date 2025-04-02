@@ -1,5 +1,5 @@
-import { 
-  Session, InsertSession, Member, InsertMember, 
+import {
+  Session, InsertSession, Member, InsertMember,
   Expense, InsertExpense
 } from "@shared/schema";
 import fs from 'fs';
@@ -34,11 +34,11 @@ export class FileStorage implements IStorage {
 
   constructor(filePath: string = 'data.json') {
     this.filePath = filePath;
-    
+
     // Đảm bảo thư mục chứa file tồn tại
     const directory = path.dirname(filePath);
     ensureDirectoryExists(directory);
-    
+
     // Default empty data structure
     this.data = {
       sessions: [],
@@ -50,7 +50,7 @@ export class FileStorage implements IStorage {
         expenseId: 1
       }
     };
-    
+
     // Load data from file if it exists
     this.loadData();
   }
@@ -59,7 +59,22 @@ export class FileStorage implements IStorage {
     try {
       if (fs.existsSync(this.filePath)) {
         const fileData = fs.readFileSync(this.filePath, 'utf8');
-        this.data = JSON.parse(fileData);
+        const rawData = JSON.parse(fileData);
+
+        // Convert ISO date strings to Date objects
+        this.data = {
+          ...rawData,
+          sessions: rawData.sessions.map(session => ({
+            ...session,
+            createdAt: new Date(session.createdAt),
+            lastAccessTime: session.lastAccessTime ? new Date(session.lastAccessTime) : new Date(session.createdAt)
+          })),
+          expenses: rawData.expenses.map(expense => ({
+            ...expense,
+            createdAt: new Date(expense.createdAt)
+          }))
+        };
+
         this.initialized = true;
         console.log('Data loaded from file successfully.');
       } else {
@@ -77,8 +92,22 @@ export class FileStorage implements IStorage {
 
   private saveData(): void {
     try {
-      fs.writeFileSync(this.filePath, JSON.stringify(this.data, null, 2), 'utf8');
-      console.log('Data saved to file successfully.');
+      // Convert Date objects to ISO strings before saving
+      const dataToSave = {
+        ...this.data,
+        sessions: this.data.sessions.map(session => ({
+          ...session,
+          createdAt: session.createdAt instanceof Date ? session.createdAt.toISOString() : session.createdAt,
+          lastAccessTime: session.lastAccessTime instanceof Date ? session.lastAccessTime.toISOString() : session.lastAccessTime
+        })),
+        expenses: this.data.expenses.map(expense => ({
+          ...expense,
+          createdAt: expense.createdAt instanceof Date ? expense.createdAt.toISOString() : expense.createdAt
+        }))
+      };
+
+      fs.writeFileSync(this.filePath, JSON.stringify(dataToSave, null, 2), 'utf8');
+      console.log('Data saved to file successfully with timestamp:', new Date().toISOString());
     } catch (error) {
       console.error('Error saving data to file:', error);
     }
@@ -86,24 +115,40 @@ export class FileStorage implements IStorage {
 
   // Session methods
   async createSession(): Promise<Session> {
+    // Delete empty sessions before creating new one
+    await this.deleteEmptySessions();
+
     const id = this.data.counters.sessionId++;
     const code = nanoid(6).toUpperCase();
     const now = new Date();
-    
+
     const session: Session = {
       id,
       code,
-      createdAt: now
+      createdAt: now,
+      lastAccessTime: now
     };
-    
+
     this.data.sessions.push(session);
     this.saveData();
-    
+
     return session;
   }
 
-  async getSessionByCode(code: string): Promise<Session | undefined> {
-    return this.data.sessions.find(session => session.code === code);
+  async getSessionByCode(code: string): Promise<Session> {
+    const session = this.data.sessions.find(session => session.code === code);
+    
+    if (!session) {
+      throw new Error('SESSION_NOT_FOUND');
+    }
+    
+    // Update lastAccessTime when session is accessed
+    const now = new Date();
+    console.log(`Updating lastAccessTime for session ${session.code} to ${now.toISOString()}`);
+    session.lastAccessTime = now;
+    this.saveData();
+    
+    return session;
   }
 
   // Member methods
@@ -118,25 +163,25 @@ export class FileStorage implements IStorage {
   async createMember(member: InsertMember): Promise<Member> {
     const id = this.data.counters.memberId++;
     const newMember: Member = { ...member, id };
-    
+
     this.data.members.push(newMember);
     this.saveData();
-    
+
     return newMember;
   }
 
   async updateMember(id: number, name: string): Promise<Member | undefined> {
     const memberIndex = this.data.members.findIndex(member => member.id === id);
     if (memberIndex === -1) return undefined;
-    
-    const updatedMember = { 
-      ...this.data.members[memberIndex], 
-      name 
+
+    const updatedMember = {
+      ...this.data.members[memberIndex],
+      name
     };
-    
+
     this.data.members[memberIndex] = updatedMember;
     this.saveData();
-    
+
     return updatedMember;
   }
 
@@ -144,13 +189,13 @@ export class FileStorage implements IStorage {
     // Find member index
     const memberIndex = this.data.members.findIndex(member => member.id === id);
     if (memberIndex === -1) return false;
-    
+
     // Remove the member
     this.data.members.splice(memberIndex, 1);
-    
+
     // Delete expenses where member is payer
     this.data.expenses = this.data.expenses.filter(expense => expense.payerId !== id);
-    
+
     // Update expenses: remove member from participants
     this.data.expenses = this.data.expenses.map(expense => {
       if (expense.participants.includes(id)) {
@@ -161,7 +206,7 @@ export class FileStorage implements IStorage {
       }
       return expense;
     });
-    
+
     this.saveData();
     return true;
   }
@@ -178,32 +223,32 @@ export class FileStorage implements IStorage {
   async createExpense(expense: InsertExpense): Promise<Expense> {
     const id = this.data.counters.expenseId++;
     const now = new Date();
-    
+
     // Chắc chắn participants là một mảng số
-    const participants = Array.isArray(expense.participants) 
-      ? expense.participants.map(p => Number(p)) 
+    const participants = Array.isArray(expense.participants)
+      ? expense.participants.map(p => Number(p))
       : [];
-    
-    const newExpense: Expense = { 
-      ...expense, 
+
+    const newExpense: Expense = {
+      ...expense,
       participants,
       id,
       createdAt: now
     };
-    
+
     this.data.expenses.push(newExpense);
     this.saveData();
-    
+
     return newExpense;
   }
 
   async updateExpense(id: number, expenseData: Partial<InsertExpense>): Promise<Expense | undefined> {
     const expenseIndex = this.data.expenses.findIndex(expense => expense.id === id);
     if (expenseIndex === -1) return undefined;
-    
+
     // Xử lý participants nếu được cung cấp
     let processedData: Partial<InsertExpense> = { ...expenseData };
-    
+
     if (expenseData.participants) {
       processedData = {
         ...processedData,
@@ -212,25 +257,64 @@ export class FileStorage implements IStorage {
           : []
       };
     }
-    
-    const updatedExpense: Expense = { 
-      ...this.data.expenses[expenseIndex], 
-      ...processedData 
+
+    const updatedExpense: Expense = {
+      ...this.data.expenses[expenseIndex],
+      ...processedData
     };
-    
+
     this.data.expenses[expenseIndex] = updatedExpense;
     this.saveData();
-    
+
     return updatedExpense;
   }
 
   async deleteExpense(id: number): Promise<boolean> {
     const expenseIndex = this.data.expenses.findIndex(expense => expense.id === id);
     if (expenseIndex === -1) return false;
-    
+
     this.data.expenses.splice(expenseIndex, 1);
     this.saveData();
-    
+
     return true;
+  }
+
+  async deleteEmptySessions(): Promise<number> {
+    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+    const now = new Date();
+
+    // Get sessions with expenses
+    const sessionIdsWithExpenses = new Set(
+      this.data.expenses.map(expense => expense.sessionId)
+    );
+
+    // Filter sessions that are both empty and inactive for 7 days
+    const oldEmptySessions = this.data.sessions.filter(session => {
+      const isEmptySession = !sessionIdsWithExpenses.has(session.id);
+      const daysSinceLastAccess = now.getTime() - new Date(session.lastAccessTime).getTime();
+      const isInactive = daysSinceLastAccess >= SEVEN_DAYS_MS;
+      
+      return isEmptySession && isInactive;
+    });
+
+    if (oldEmptySessions.length === 0) {
+      return 0;
+    }
+
+    const oldEmptySessionIds = oldEmptySessions.map(session => session.id);
+
+    // Remove old empty sessions
+    this.data.sessions = this.data.sessions.filter(
+      session => !oldEmptySessionIds.includes(session.id)
+    );
+
+    // Remove members from old empty sessions
+    this.data.members = this.data.members.filter(
+      member => !oldEmptySessionIds.includes(member.sessionId)
+    );
+
+    this.saveData();
+
+    return oldEmptySessions.length;
   }
 }

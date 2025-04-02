@@ -3,6 +3,7 @@ import { useSession } from '@/context/SessionContext';
 import { useSessionData } from '@/hooks/useSessionData';
 import { useResponsive } from '@/hooks/use-responsive';
 import { getMemberColor, getContrastTextColor } from '@/utils/colors';
+import { formatVietnameseCurrency } from '@/utils/format';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Plus, Pencil, Trash2, SplitSquareHorizontal } from 'lucide-react';
@@ -86,11 +87,11 @@ export function ExpensesTable() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/3">
+                <th scope="col" className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Chi tiêu
                 </th>
                 <th scope="col" className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Tổng tiền (nghìn VNĐ)
+                  Tổng tiền (K)
                 </th>
                 <th scope="col" className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Người trả
@@ -149,7 +150,7 @@ export function ExpensesTable() {
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-sm">{expense.amount}</td>
+                      <td className="py-3 px-4 text-sm">{formatVietnameseCurrency(expense.amount)}</td>
                       <td className="py-3 px-4 text-sm">
                         {payer && (
                           <span className="flex items-center text-xs font-medium">
@@ -173,7 +174,7 @@ export function ExpensesTable() {
                           </div>
                           {expense.participants.includes(member.id) && (
                             <div className={`text-xs mt-1 ${expense.isCustomSplit ? 'font-medium text-primary' : 'text-gray-600'}`}>
-                              {splitAmounts[member.id]}
+                              {formatVietnameseCurrency(splitAmounts[member.id])}
                             </div>
                           )}
                         </td>
@@ -208,11 +209,11 @@ export function ExpensesTable() {
               <tfoot className="bg-gray-50">
                 <tr>
                   <td className="py-3 px-4 text-sm font-semibold">Tổng</td>
-                  <td className="py-3 px-4 text-sm font-semibold">{totalAmount}</td>
+                  <td className="py-3 px-4 text-sm font-semibold">{formatVietnameseCurrency(totalAmount)}</td>
                   <td className="py-3 px-4"></td>
                   {members.map(member => (
                     <td key={member.id} className="py-3 px-4 text-sm font-semibold text-center">
-                      {memberTotals[member.id]}
+                      {formatVietnameseCurrency(memberTotals[member.id])}
                     </td>
                   ))}
                   <td className="py-3 px-4"></td>

@@ -7,6 +7,7 @@ export const sessions = pgTable("sessions", {
   id: serial("id").primaryKey(),
   code: text("code").notNull().unique(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  lastAccessTime: timestamp("last_access_time").defaultNow().notNull(),
 });
 
 // Member table to store group members for each session

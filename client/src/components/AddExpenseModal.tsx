@@ -244,11 +244,6 @@ export function AddExpenseModal({
         ...prev, 
         tip: 'Mẹo: Chỉ cần nhập số tiền cho một số thành viên, số tiền còn lại sẽ tự động được chia đều cho các thành viên khác' 
       }));
-      
-      // Tự động xóa gợi ý sau 5 giây
-      setTimeout(() => {
-        setFormData(prev => ({ ...prev, tip: '' }));
-      }, 5000);
     }
   };
   
@@ -353,7 +348,7 @@ export function AddExpenseModal({
             
             {/* Amount */}
             <div className="space-y-1">
-              <Label htmlFor="expense-amount">Số tiền (nghìn VNĐ)</Label>
+              <Label htmlFor="expense-amount">Số tiền (K)</Label>
               <Input
                 id="expense-amount"
                 type="number"
