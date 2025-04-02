@@ -32,10 +32,11 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { formatVietnameseCurrency } from '@/utils/format';
 
 export function ExpensesMobileView() {
   const { members, expenses, deleteExpense } = useSession();
-  const { getMemberById, getMemberSplitAmounts } = useSessionData();
+  const { getMemberById, getMemberSplitAmounts, getMemberBalance } = useSessionData();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -61,32 +62,51 @@ export function ExpensesMobileView() {
   // Calculate totals
   const totalAmount = expenses.reduce((sum, expense) => sum + expense.amount, 0);
 
+  // Tính tổng chi tiêu và số dư cho mỗi thành viên
+  const memberTotals = members.map(member => {
+    const totalSpent = expenses.reduce((total, expense) => {
+      const splitAmounts = getMemberSplitAmounts(expense);
+      const isParticipant = expense.participants?.includes(member.id) || false;
+      return total + (isParticipant ? (splitAmounts[member.id] || 0) : 0);
+    }, 0);
+
+    const balance = getMemberBalance(member.id);
+
+    return {
+      member,
+      totalSpent,
+      balance
+    };
+  });
+
   return (
-    <>
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-semibold">Chi tiêu</h2>
-        <Button 
-          onClick={() => setShowAddModal(true)}
-          className="bg-primary text-white hover:bg-blue-600 flex items-center"
-          size="sm"
-          disabled={members.length === 0}
-        >
-          <Plus className="mr-1 h-4 w-4" /> Thêm
-        </Button>
-      </div>
-      
-      {expenses.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
-          {members.length === 0 
-            ? "Thêm thành viên để bắt đầu nhập chi tiêu"
-            : "Chưa có chi tiêu nào. Thêm chi tiêu để bắt đầu."}
+    <div className="space-y-4">
+
+      {/* Danh sách chi tiêu */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold">Chi tiêu</h2>
+          <Button 
+            onClick={() => setShowAddModal(true)}
+            className="bg-primary text-white hover:bg-blue-600 flex items-center"
+            size="sm"
+            disabled={members.length === 0}
+          >
+            <Plus className="mr-1 h-4 w-4" /> Thêm
+          </Button>
         </div>
-      ) : (
-        <div className="space-y-3">
-          {expenses.map(expense => {
+        
+        {expenses.length === 0 ? (
+          <div className="bg-white rounded-lg shadow p-4 text-center text-sm text-gray-500">
+            {members.length === 0 
+              ? "Thêm thành viên để bắt đầu nhập chi tiêu"
+              : "Chưa có chi tiêu nào. Thêm chi tiêu để bắt đầu."}
+          </div>
+        ) : (
+          expenses.map(expense => {
             const payer = getMemberById(expense.payerId);
             const splitAmounts = getMemberSplitAmounts(expense);
-            const participantCount = expense.participants.length;
+            const participantCount = expense.participants?.length || 0;
             
             return (
               <Card key={expense.id} className="shadow-sm">
@@ -130,7 +150,7 @@ export function ExpensesMobileView() {
                     <AccordionContent className="px-4 pb-3">
                       <div className="space-y-1">
                         {members.map(member => {
-                          const isParticipant = expense.participants.includes(member.id);
+                          const isParticipant = expense.participants?.includes(member.id) || false;
                           const amount = splitAmounts[member.id];
                           
                           if (!isParticipant) return null;
@@ -175,18 +195,18 @@ export function ExpensesMobileView() {
                 </CardFooter>
               </Card>
             );
-          })}
-          
-          <Card className="bg-gray-50 shadow-sm">
-            <CardHeader className="py-3 px-4">
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-base">Tổng chi tiêu</CardTitle>
-                <div className="text-base font-bold">{totalAmount}k</div>
-              </div>
-            </CardHeader>
-          </Card>
-        </div>
-      )}
+          })
+        )}
+        
+        <Card className="bg-gray-50 shadow-sm">
+          <CardHeader className="py-3 px-4">
+            <div className="flex justify-between items-center">
+              <CardTitle className="text-base">Tổng chi tiêu</CardTitle>
+              <div className="text-base font-bold">{totalAmount}k</div>
+            </div>
+          </CardHeader>
+        </Card>
+      </div>
 
       {/* Add Expense Modal */}
       <AddExpenseModal 
@@ -222,6 +242,30 @@ export function ExpensesMobileView() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+
+      {/* Tổng chi tiêu và số dư */}
+      <div className="bg-white rounded-lg shadow p-4 space-y-3">
+        <h3 className="text-sm font-semibold text-gray-500 uppercase">Chi tiêu mỗi thành viên</h3>
+        <div className="space-y-2">
+          {memberTotals.map(({ member, totalSpent, balance }) => (
+            <div key={member.id} className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <span 
+                  className="inline-block w-3 h-3 rounded-full"
+                  style={{ backgroundColor: getMemberColor(member.id) }}
+                ></span>
+                <span className="text-sm font-medium">{member.name}</span>
+              </div>
+              <div className="text-right">
+                <div className="text-sm font-medium">{formatVietnameseCurrency(totalSpent)}</div>
+                <div className={`text-xs ${balance > 0 ? 'text-green-600' : balance < 0 ? 'text-red-600' : 'text-gray-500'}`}>
+                  {balance > 0 ? 'Được hoàn:' : 'Còn nợ:'} {formatVietnameseCurrency(balance)}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }

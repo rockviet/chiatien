@@ -58,7 +58,8 @@ export function ExpensesTable() {
   const memberTotals = members.map(member => {
     const totalSpent = expenses.reduce((total, expense) => {
       const splitAmounts = getMemberSplitAmounts(expense);
-      return total + (splitAmounts[member.id] || 0);
+      const isParticipant = expense.participants?.includes(member.id) || false;
+      return total + (isParticipant ? (splitAmounts[member.id] || 0) : 0);
     }, 0);
 
     const balance = getMemberBalance(member.id);
@@ -93,7 +94,7 @@ export function ExpensesTable() {
                   Chi tiêu
                 </th>
                 <th scope="col" className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Tổng tiền (K)
+                  Số tiền (K)
                 </th>
                 <th scope="col" className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Người trả
@@ -213,11 +214,31 @@ export function ExpensesTable() {
                   <td className="py-3 px-4 text-sm font-semibold">Tổng</td>
                   <td className="py-3 px-4 text-sm font-semibold">{formatVietnameseCurrency(totalAmount)}</td>
                   <td className="py-3 px-4"></td>
-                  {members.map(member => (
-                    <td key={member.id} className="py-3 px-4 text-sm font-semibold text-center">
-                      {formatVietnameseCurrency(memberTotals[member.id].totalSpent)}
-                    </td>
-                  ))}
+                  {members.map(member => {
+                    const memberTotal = memberTotals.find(mt => mt.member.id === member.id);
+                    return (
+                      <td key={member.id} className="py-3 px-4 text-sm font-semibold text-center">
+                        {formatVietnameseCurrency(memberTotal?.totalSpent || 0)}
+                      </td>
+                    );
+                  })}
+                  <td className="py-3 px-4"></td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 text-sm font-semibold">Số dư</td>
+                  <td className="py-3 px-4"></td>
+                  <td className="py-3 px-4"></td>
+                  {members.map(member => {
+                    const memberTotal = memberTotals.find(mt => mt.member.id === member.id);
+                    const balance = memberTotal?.balance || 0;
+                    return (
+                      <td key={member.id} className="py-3 px-4 text-sm font-semibold text-center">
+                        <span className={balance > 0 ? 'text-green-600' : balance < 0 ? 'text-red-600' : ''}>
+                          {balance > 0 ? 'Được hoàn:' : 'Còn nợ:'} <br /> {formatVietnameseCurrency(balance)}
+                        </span>
+                      </td>
+                    );
+                  })}
                   <td className="py-3 px-4"></td>
                 </tr>
               </tfoot>
