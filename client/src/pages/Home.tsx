@@ -104,7 +104,7 @@ export default function Home() {
                 {/* Settlement Section */}
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle>Thanh toán</CardTitle>
+                    <CardTitle>Tạo giao dịch chéo</CardTitle>
                   </CardHeader>
                   <CardContent className="pt-0">
                     <SettlementList />
