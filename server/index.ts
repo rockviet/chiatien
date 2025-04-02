@@ -2,6 +2,8 @@ import { config } from "dotenv";
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import cron from "node-cron";
+import { storage } from "./storage";
 
 // Load environment variables
 config();
@@ -14,6 +16,17 @@ if (!process.env.TURSO_DATABASE_URL) {
 if (!process.env.TURSO_AUTH_TOKEN) {
   throw new Error("TURSO_AUTH_TOKEN environment variable is required");
 }
+
+// Schedule cleanup task to run at midnight every day
+cron.schedule("0 0 * * *", async () => {
+  try {
+    log("Running cleanup task for inactive sessions...");
+    await storage.cleanupInactiveSessions();
+    log("Cleanup task completed successfully");
+  } catch (error) {
+    log("Error during cleanup task: " + (error instanceof Error ? error.message : String(error)));
+  }
+});
 
 const app = express();
 app.use(express.json());

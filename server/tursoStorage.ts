@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, and, lt, not, exists } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "./db";
 import { 
@@ -21,6 +21,14 @@ export class TursoStorage implements IStorage {
     const [session] = await db.select()
       .from(sessions)
       .where(eq(sessions.code, code));
+
+    if (session) {
+      // Update last access time
+      await db.update(sessions)
+        .set({ lastAccessTime: new Date() })
+        .where(eq(sessions.id, session.id));
+    }
+
     return session;
   }
 
@@ -161,5 +169,52 @@ export class TursoStorage implements IStorage {
       .where(eq(expenses.id, id))
       .returning();
     return result.length > 0;
+  }
+
+  /**
+   * Clean up inactive sessions that:
+   * 1. Have not been accessed in the last 7 days
+   * 2. Have no expenses
+   */
+  async cleanupInactiveSessions(): Promise<void> {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    // Find sessions that have no expenses and haven't been accessed in 7 days
+    const inactiveSessions = await db.select()
+      .from(sessions)
+      .where(
+        and(
+          lt(sessions.lastAccessTime, sevenDaysAgo),
+          not(
+            exists(
+              db.select()
+                .from(expenses)
+                .where(eq(expenses.sessionId, sessions.id))
+            )
+          )
+        )
+      );
+
+    // Delete members of inactive sessions
+    for (const session of inactiveSessions) {
+      await db.delete(members)
+        .where(eq(members.sessionId, session.id));
+    }
+
+    // Delete inactive sessions
+    await db.delete(sessions)
+      .where(
+        and(
+          lt(sessions.lastAccessTime, sevenDaysAgo),
+          not(
+            exists(
+              db.select()
+                .from(expenses)
+                .where(eq(expenses.sessionId, sessions.id))
+            )
+          )
+        )
+      );
   }
 } 
