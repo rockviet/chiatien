@@ -1,33 +1,34 @@
-import { pgTable, text, serial, integer, boolean, jsonb, timestamp } from "drizzle-orm/pg-core";
+import { sqliteTable, text, integer, blob } from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Session table to store active bill-splitting sessions
-export const sessions = pgTable("sessions", {
-  id: serial("id").primaryKey(),
+export const sessions = sqliteTable("sessions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   code: text("code").notNull().unique(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  lastAccessTime: timestamp("last_access_time").defaultNow().notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  lastAccessTime: integer("last_access_time", { mode: "timestamp" }).notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
 // Member table to store group members for each session
-export const members = pgTable("members", {
-  id: serial("id").primaryKey(),
+export const members = sqliteTable("members", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   sessionId: integer("session_id").notNull().references(() => sessions.id, { onDelete: 'cascade' }),
   name: text("name").notNull(),
 });
 
 // Expense table to store expenses for each session
-export const expenses = pgTable("expenses", {
-  id: serial("id").primaryKey(),
+export const expenses = sqliteTable("expenses", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   sessionId: integer("session_id").notNull().references(() => sessions.id, { onDelete: 'cascade' }),
   name: text("name").notNull(),
   amount: integer("amount").notNull(), // Stored in thousand VND
   payerId: integer("payer_id").notNull().references(() => members.id, { onDelete: 'cascade' }),
-  participants: jsonb("participants").notNull().$type<number[]>(), // Array of member IDs
-  customAmounts: jsonb("custom_amounts").notNull().$type<Record<number, number>>(), // Custom amounts for each participant
-  isCustomSplit: boolean("is_custom_split").default(false).notNull(), // Flag for custom split
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  participants: blob("participants", { mode: "json" }).$type<number[]>(), // Array of member IDs
+  customAmounts: blob("custom_amounts", { mode: "json" }).$type<Record<number, number>>(), // Custom amounts for each participant
+  isCustomSplit: integer("is_custom_split", { mode: "boolean" }).notNull().default(false),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
 // Schemas for data validation

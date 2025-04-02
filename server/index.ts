@@ -1,6 +1,19 @@
+import { config } from "dotenv";
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+
+// Load environment variables
+config();
+
+// Validate required environment variables
+if (!process.env.TURSO_DATABASE_URL) {
+  throw new Error("TURSO_DATABASE_URL environment variable is required");
+}
+
+if (!process.env.TURSO_AUTH_TOKEN) {
+  throw new Error("TURSO_AUTH_TOKEN environment variable is required");
+}
 
 const app = express();
 app.use(express.json());
@@ -59,7 +72,7 @@ app.use((req, res, next) => {
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  const port = 5008;
+  const port = 5009;
   server.listen(
     {
       port,
