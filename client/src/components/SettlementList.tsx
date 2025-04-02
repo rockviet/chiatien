@@ -81,7 +81,7 @@ export function SettlementList() {
   if (settlements.length === 0) {
     return (
       <div className="p-4 text-center text-gray-500">
-        Không có khoản thanh toán nào cần thực hiện.
+        Không có khoản giao dịch nào cần thực hiện.
       </div>
     );
   }
@@ -107,7 +107,7 @@ export function SettlementList() {
             <Label htmlFor="grouping-toggle" className="cursor-pointer">
               <span className="flex items-center">
                 <Users className="h-4 w-4 mr-1.5" />
-                Nhóm thành viên khi thanh toán
+                Nhóm thành viên (cặp đôi, gia đình, nhóm...)
               </span>
             </Label>
           </div>
@@ -160,7 +160,7 @@ export function SettlementList() {
       
       {/* Danh sách các khoản thanh toán */}
       <div className="bg-white p-4 rounded-md shadow-sm">
-        <h3 className="text-base font-medium mb-3">Các giao dịch thanh toán</h3>
+        <h3 className="text-base font-medium mb-3">Các giao dịch chéo giữa các thành viên</h3>
         <ul className="divide-y divide-gray-200">
           {settlements.map((settlement, index) => {
             const fromMember = getMemberById(settlement.fromId);
