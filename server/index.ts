@@ -82,10 +82,10 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
+  // ALWAYS serve the app on port 8811
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  const port = 5009;
+  const port = process.env.PORT ? parseInt(process.env.PORT) : 8811;
   server.listen(
     {
       port,

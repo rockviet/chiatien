@@ -239,7 +239,7 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
     } catch (error) {
       console.error("Error setting up WebSocket:", error);
       setError("Lỗi thiết lập kết nối với máy chủ.");
-      return new WebSocket("ws://localhost:5000");  // Return a dummy websocket to prevent null errors
+      return new WebSocket("ws://chiatien.viet241.com");  // Return a dummy websocket to prevent null errors
     }
   };
 
