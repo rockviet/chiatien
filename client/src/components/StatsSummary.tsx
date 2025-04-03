@@ -1,6 +1,5 @@
 import { useSessionData } from '@/hooks/useSessionData';
 import { useSession } from '@/context/SessionContext';
-import { ExportMenu } from './ExportMenu';
 import { formatVietnameseCurrency } from '@/utils/format';
 import { useMemo } from 'react';
 
@@ -45,7 +44,9 @@ export function StatsSummary() {
 
     // Tính thời gian từ khoản chi đầu tiên
     const sortedExpenses = [...expenses].sort((a, b) => {
-      return new Date(a.createdAt * 1000).getTime() - new Date(b.createdAt * 1000).getTime();
+      const createdAtA = typeof a.createdAt === 'number' ? a.createdAt * 1000 : new Date(a.createdAt).getTime();
+      const createdAtB = typeof b.createdAt === 'number' ? b.createdAt * 1000 : new Date(b.createdAt).getTime();
+      return createdAtA - createdAtB;
     });
 
     return {
@@ -58,9 +59,8 @@ export function StatsSummary() {
 
   return (
     <div className="p-2 sm:p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-medium">Tổng kết chi tiêu</h3>
-        <ExportMenu />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <h3 className="text-sm sm:text-base font-medium">Thống kê chi tiêu</h3>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
