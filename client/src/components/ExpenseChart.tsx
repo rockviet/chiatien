@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useSession } from '@/context/SessionContext';
 import { useSessionData } from '@/hooks/useSessionData';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Chart, ChartConfiguration, ChartData, registerables } from 'chart.js';
 import { memberColors } from '@/utils/colors';
 

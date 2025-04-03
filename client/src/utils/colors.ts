@@ -12,6 +12,20 @@ export const memberColors = [
   '#D946EF', // Fuchsia
   '#6366F1', // Indigo
   '#0EA5E9', // Sky
+  '#000000', // Black
+  '#84CC16', // Lime
+  '#22C55E', // Green
+  '#EAB308', // Yellow
+  '#DC2626', // Red
+  '#9333EA', // Purple
+  '#BE185D', // Pink
+  '#0891B2', // Cyan
+  '#EA580C', // Orange
+  '#0D9488', // Teal
+  '#C026D3', // Fuchsia
+  '#4F46E5', // Indigo
+  '#0284C7', // Sky
+  '#171717', // Gray
 ];
 
 // Tạo map lưu trữ màu sắc cho các thành viên

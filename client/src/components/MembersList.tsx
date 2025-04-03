@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useSession } from '@/context/SessionContext';
 import { Button } from '@/components/ui/button';
 import { Pencil, Trash2, UserPlus } from 'lucide-react';
-import { getMemberColor, getContrastTextColor } from '@/utils/colors';
+import { getMemberColor } from '@/utils/colors';
 import { AddMemberModal } from './AddMemberModal';
 import { 
   AlertDialog,

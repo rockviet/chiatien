@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useSession } from '@/context/SessionContext';
 import { useSessionData } from '@/hooks/useSessionData';
 import { useResponsive } from '@/hooks/use-responsive';
-import { getMemberColor, getContrastTextColor } from '@/utils/colors';
+import { getMemberColor } from '@/utils/colors';
 import { formatVietnameseCurrency } from '@/utils/format';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';

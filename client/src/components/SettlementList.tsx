@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useSession } from '@/context/SessionContext';
 import { useSessionData } from '@/hooks/useSessionData';
 import { ArrowRight, Users, PlusCircle, X, Edit } from 'lucide-react';
-import { getMemberColor, getContrastTextColor } from '@/utils/colors';
+import { getMemberColor } from '@/utils/colors';
 import { nanoid } from 'nanoid';
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -133,10 +133,7 @@ export function SettlementList() {
                   key={group.id} 
                   className="flex items-center justify-between bg-gray-50 rounded p-2 text-xs"
                 >
-                  <span className="font-medium">{group.name}</span>
-                  <span className="text-gray-500 mx-2">
-                    {group.memberIds.length} thành viên
-                  </span>
+                  <span className="font-medium">{group.name} ({group.memberIds.length})</span>
                   <div className="flex space-x-1">
                     <button 
                       className="p-1 text-blue-500 hover:text-blue-700" 
