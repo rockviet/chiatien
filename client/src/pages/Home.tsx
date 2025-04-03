@@ -27,7 +27,7 @@ export default function Home() {
       <div className="min-h-screen w-full flex items-center justify-center bg-gray-100">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-          <h2 className="mt-4 text-lg font-medium">Đang tải...</h2>
+          <h2 className="mt-4 font-medium font-mono">Đang lấy dữ liệu và tạo socket...</h2>
         </div>
       </div>
     );
