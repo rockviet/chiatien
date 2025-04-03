@@ -1,40 +1,40 @@
 import { useEffect, useRef } from 'react';
 import { useSession } from '@/context/SessionContext';
 import { useSessionData } from '@/hooks/useSessionData';
-import { Chart, ChartConfiguration, ChartData, registerables } from 'chart.js';
+import { Chart, registerables } from 'chart.js';
 import { memberColors } from '@/utils/colors';
 
+// Lazy load Chart.js
 Chart.register(...registerables);
 
 export function ExpenseChart() {
-  const { members } = useSession();
   const { summary } = useSessionData();
   const chartRef = useRef<HTMLCanvasElement>(null);
-  const chartInstance = useRef<Chart | null>(null);
+  const chartInstanceRef = useRef<Chart | null>(null);
 
   useEffect(() => {
     if (!chartRef.current) return;
     
     // Clean up previous chart if it exists
-    if (chartInstance.current) {
-      chartInstance.current.destroy();
+    if (chartInstanceRef.current) {
+      chartInstanceRef.current.destroy();
     }
     
     const ctx = chartRef.current.getContext('2d');
     if (!ctx) return;
-    
-    const categoryData = summary.expensesByCategory;
+
+    // Prepare data
+    const categoryData = summary.expensesByCategory || [];
     
     // If no data, display empty chart
     if (categoryData.length === 0) {
-      chartInstance.current = new Chart(ctx, {
-        type: 'pie',
+      chartInstanceRef.current = new Chart(ctx, {
+        type: 'doughnut',
         data: {
           labels: ['Chưa có chi tiêu'],
           datasets: [{
             data: [1],
-            backgroundColor: ['#e5e5e5'],
-            hoverBackgroundColor: ['#e5e5e5']
+            backgroundColor: ['#e5e7eb']
           }]
         },
         options: {
@@ -43,6 +43,9 @@ export function ExpenseChart() {
           plugins: {
             legend: {
               position: 'bottom'
+            },
+            tooltip: {
+              enabled: false
             }
           }
         }
@@ -51,19 +54,15 @@ export function ExpenseChart() {
     }
     
     // Create chart with real data
-    const data: ChartData = {
-      labels: categoryData.map(cat => cat.name),
-      datasets: [{
-        data: categoryData.map(cat => cat.amount),
-        backgroundColor: categoryData.map((_, index) => 
-          memberColors[index % memberColors.length]
-        )
-      }]
-    };
-    
-    const config: ChartConfiguration = {
-      type: 'pie',
-      data: data,
+    chartInstanceRef.current = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: categoryData.map(cat => cat.name),
+        datasets: [{
+          data: categoryData.map(cat => cat.amount),
+          backgroundColor: memberColors
+        }]
+      },
       options: {
         responsive: true,
         maintainAspectRatio: false,
@@ -75,29 +74,29 @@ export function ExpenseChart() {
             callbacks: {
               label: function(context) {
                 const value = context.raw as number;
-                return `${context.label}: ${value} K`;
+                return ` ${context.label}: ${new Intl.NumberFormat('vi-VN', { 
+                  style: 'currency', 
+                  currency: 'VND',
+                  maximumFractionDigits: 0
+                }).format(value)}`;
               }
             }
           }
         }
       }
-    };
-    
-    chartInstance.current = new Chart(ctx, config);
+    });
     
     // Clean up
     return () => {
-      if (chartInstance.current) {
-        chartInstance.current.destroy();
+      if (chartInstanceRef.current) {
+        chartInstanceRef.current.destroy();
       }
     };
   }, [summary]);
 
   return (
-    <div className="p-4 flex justify-center">
-      <div style={{ height: '250px', width: '100%' }}>
-        <canvas ref={chartRef} />
-      </div>
+    <div className="h-[300px] w-full">
+      <canvas ref={chartRef}></canvas>
     </div>
   );
 }

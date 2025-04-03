@@ -59,20 +59,22 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
     const code = params.get('code');
     
     if (code) {
-      joinSession(code);
+      // Trì hoãn kết nối WebSocket một chút để cho phép UI render trước
+      const timer = setTimeout(() => {
+        joinSession(code);
+      }, 100);
+      return () => clearTimeout(timer);
     } else {
       setIsLoading(false);
     }
-    
-    // Cleanup
-    return () => {
-      if (socket) {
-        socket.close();
-      }
-    };
   }, []);
 
   const setupWebSocket = () => {
+    // Nếu đã có kết nối và đang hoạt động, không cần tạo mới
+    if (socket?.readyState === WebSocket.OPEN) {
+      return socket;
+    }
+    
     try {
       // Tạo URL cho kết nối WebSocket dựa trên giao thức hiện tại
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
@@ -239,7 +241,7 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
     } catch (error) {
       console.error("Error setting up WebSocket:", error);
       setError("Lỗi thiết lập kết nối với máy chủ.");
-      return new WebSocket("ws://chiatien.viet241.com");  // Return a dummy websocket to prevent null errors
+      return null;
     }
   };
 
@@ -276,6 +278,11 @@ export const SessionProvider: React.FC<{ children: ReactNode }> = ({ children })
     
     // Setup new WebSocket connection
     const ws = setupWebSocket();
+    if (!ws) {
+      setError("Không thể thiết lập kết nối WebSocket");
+      setIsLoading(false);
+      return;
+    }
     
     // Wait for connection to open before sending join message
     const maxRetries = 20;
