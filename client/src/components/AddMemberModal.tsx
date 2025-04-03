@@ -73,7 +73,7 @@ export function AddMemberModal({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Thêm thành viên đang nhập vào danh sách (nếu có)
@@ -89,10 +89,10 @@ export function AddMemberModal({
     }
     
     if (mode === 'add') {
-      // Thêm từng thành viên trong danh sách
-      memberNames.forEach(name => {
-        addMember(name);
-      });
+      // Thêm tuần tự từng thành viên theo đúng thứ tự
+      for (const name of memberNames) {
+        await addMember(name);
+      }
     } else if (mode === 'edit' && onSubmit && memberNames.length > 0) {
       // Trong chế độ sửa, chỉ lấy tên đầu tiên
       onSubmit(memberNames[0]);
