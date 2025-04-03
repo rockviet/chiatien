@@ -38,30 +38,26 @@ export function StatsSummary() {
       curr.amount < min.amount ? curr : min
     , memberSpending[0]);
 
-    // Tính số thành viên tham gia trung bình mỗi khoản chi
-    const avgParticipants = expenses.reduce((sum, expense) => 
-      sum + (expense.participants?.length || 0), 0) / expenses.length;
+    // Tính trung bình thiệt hại mỗi người
+    const avgDamagePerPerson = Math.round(
+      memberSpending.reduce((sum, member) => sum + member.amount, 0) / members.length
+    );
 
     // Tính thời gian từ khoản chi đầu tiên
-    const sortedExpenses = [...expenses].sort((a, b) => 
-      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-    );
-    const firstExpenseDate = new Date(sortedExpenses[0].createdAt);
-    const daysSinceFirst = Math.ceil(
-      (new Date().getTime() - firstExpenseDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
+    const sortedExpenses = [...expenses].sort((a, b) => {
+      return new Date(a.createdAt * 1000).getTime() - new Date(b.createdAt * 1000).getTime();
+    });
 
     return {
       averageExpense,
       topSpender,
       leastSpender,
-      avgParticipants,
-      daysSinceFirst
+      avgDamagePerPerson
     };
   }, [expenses, members, summary]);
 
   return (
-    <div className="p-4">
+    <div className="p-2 sm:p-4">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-medium">Tổng kết chi tiêu</h3>
         <ExportMenu />
@@ -85,11 +81,6 @@ export function StatsSummary() {
           <div className="text-2xl font-bold text-primary mt-1">
             {summary.expenseCount}
           </div>
-          {additionalStats && additionalStats.daysSinceFirst > 0 && (
-            <div className="text-sm text-gray-500 mt-2">
-              Trong {additionalStats.daysSinceFirst} ngày
-            </div>
-          )}
         </div>
         
         <div className="bg-gray-50 p-4 rounded-lg">
@@ -124,12 +115,12 @@ export function StatsSummary() {
             </div>
 
             <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="text-sm text-gray-500">Số người tham gia trung bình</div>
+              <div className="text-sm text-gray-500">Trung bình thiệt hại</div>
               <div className="text-2xl font-bold text-primary mt-1">
-                {Math.round(additionalStats.avgParticipants * 10) / 10}
+                {formatVietnameseCurrency(additionalStats.avgDamagePerPerson)}
               </div>
               <div className="text-sm text-gray-500 mt-2">
-                người/khoản chi
+                mỗi người
               </div>
             </div>
           </>

@@ -94,20 +94,20 @@ export function SettlementList() {
   };
 
   return (
-    <div className="p-4">
+    <div className="p-2 sm:p-4">
       {/* Phần cài đặt nhóm thành viên */}
-      <div className="mb-4 bg-white p-4 rounded-md shadow-sm">
-        <div className="flex items-center justify-between mb-3">
+      <div className="mb-4 bg-white p-3 sm:p-4 rounded-md shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
           <div className="flex items-center space-x-2">
             <Switch 
               id="grouping-toggle" 
               checked={isGroupingEnabled}
               onCheckedChange={toggleGrouping}
             />
-            <Label htmlFor="grouping-toggle" className="cursor-pointer">
+            <Label htmlFor="grouping-toggle" className="cursor-pointer text-sm sm:text-base">
               <span className="flex items-center">
                 <Users className="h-4 w-4 mr-1.5" />
-                Nhóm thành viên (cặp đôi, gia đình, nhóm...)
+                Nhóm thành viên
               </span>
             </Label>
           </div>
@@ -115,7 +115,7 @@ export function SettlementList() {
           <Button 
             variant="outline" 
             size="sm" 
-            className="text-xs"
+            className="text-xs w-full sm:w-auto"
             onClick={openCreateGroupDialog}
             disabled={!isGroupingEnabled}
           >
@@ -134,18 +134,18 @@ export function SettlementList() {
                   className="flex items-center justify-between bg-gray-50 rounded p-2 text-xs"
                 >
                   <span className="font-medium">{group.name}</span>
-                  <span className="text-gray-500">
+                  <span className="text-gray-500 mx-2">
                     {group.memberIds.length} thành viên
                   </span>
                   <div className="flex space-x-1">
                     <button 
-                      className="p-0.5 text-blue-500 hover:text-blue-700" 
+                      className="p-1 text-blue-500 hover:text-blue-700" 
                       onClick={() => openEditGroupDialog(group)}
                     >
                       <Edit className="h-3.5 w-3.5" />
                     </button>
                     <button 
-                      className="p-0.5 text-red-500 hover:text-red-700" 
+                      className="p-1 text-red-500 hover:text-red-700" 
                       onClick={() => deleteGroup(group.id)}
                     >
                       <X className="h-3.5 w-3.5" />
@@ -159,8 +159,8 @@ export function SettlementList() {
       </div>
       
       {/* Danh sách các khoản thanh toán */}
-      <div className="bg-white p-4 rounded-md shadow-sm">
-        <h3 className="text-base font-medium mb-3">Các giao dịch chéo giữa các thành viên</h3>
+      <div className="bg-white p-3 sm:p-4 rounded-md shadow-sm">
+        <h3 className="text-sm sm:text-base font-medium mb-3">Các giao dịch chéo giữa các thành viên</h3>
         <ul className="divide-y divide-gray-200">
           {settlements.map((settlement, index) => {
             const fromMember = getMemberById(settlement.fromId);
@@ -173,41 +173,50 @@ export function SettlementList() {
             const toGroupName = getGroupName(settlement.toGroupId);
             
             return (
-              <li key={index} className="py-3 flex items-center justify-between">
-                <div className="flex items-center">
-                  <span className="flex items-center text-xs font-medium">
-                    <span 
-                      className="inline-block w-3 h-3 rounded-full mr-1.5"
-                      style={{ backgroundColor: getMemberColor(fromMember.id) }}
-                    ></span>
-                    {fromGroupName ? (
-                      <span className="flex items-center">
-                        <span className="font-semibold">{fromGroupName}</span>
-                        <span className="ml-1 text-xs opacity-70">({fromMember.name})</span>
+              <li key={index} className="py-2.5 sm:py-3">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <div className="flex items-center flex-wrap gap-1.5">
+                    <div className="flex items-center min-w-0">
+                      <span 
+                        className="inline-block w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: getMemberColor(fromMember.id) }}
+                      ></span>
+                      <span className="ml-1.5 text-xs sm:text-sm font-medium truncate">
+                        {fromGroupName ? (
+                          <span className="flex items-center">
+                            <span className="font-semibold truncate">{fromGroupName}</span>
+                            <span className="ml-1 text-xs opacity-70 hidden sm:inline">({fromMember.name})</span>
+                          </span>
+                        ) : (
+                          fromMember.name
+                        )}
                       </span>
-                    ) : (
-                      fromMember.name
-                    )}
-                  </span>
-                  <ArrowRight className="mx-2 text-gray-500 h-4 w-4" />
-                  <span className="flex items-center text-xs font-medium">
-                    <span 
-                      className="inline-block w-3 h-3 rounded-full mr-1.5"
-                      style={{ backgroundColor: getMemberColor(toMember.id) }}
-                    ></span>
-                    {toGroupName ? (
-                      <span className="flex items-center">
-                        <span className="font-semibold">{toGroupName}</span>
-                        <span className="ml-1 text-xs opacity-70">({toMember.name})</span>
+                    </div>
+
+                    <ArrowRight className="text-gray-500 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+
+                    <div className="flex items-center min-w-0">
+                      <span 
+                        className="inline-block w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: getMemberColor(toMember.id) }}
+                      ></span>
+                      <span className="ml-1.5 text-xs sm:text-sm font-medium truncate">
+                        {toGroupName ? (
+                          <span className="flex items-center">
+                            <span className="font-semibold truncate">{toGroupName}</span>
+                            <span className="ml-1 text-xs opacity-70 hidden sm:inline">({toMember.name})</span>
+                          </span>
+                        ) : (
+                          toMember.name
+                        )}
                       </span>
-                    ) : (
-                      toMember.name
-                    )}
+                    </div>
+                  </div>
+
+                  <span className="text-right text-xs sm:text-sm font-medium text-primary">
+                    {formatVietnameseCurrency(settlement.amount)}
                   </span>
                 </div>
-                <span className="text-right font-medium">
-                  {formatVietnameseCurrency(settlement.amount)}
-                </span>
               </li>
             );
           })}
@@ -253,7 +262,7 @@ export function SettlementList() {
                     <Label htmlFor={`member-${member.id}`} className="text-sm cursor-pointer">
                       <span className="flex items-center">
                         <span 
-                          className="inline-block w-3 h-3 rounded-full mr-1.5"
+                          className="inline-block w-2.5 h-2.5 rounded-full mr-1.5"
                           style={{ backgroundColor: getMemberColor(member.id) }}
                         ></span>
                         {member.name}
@@ -269,21 +278,24 @@ export function SettlementList() {
           </div>
           
           <DialogFooter>
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => setIsGroupDialogOpen(false)}
-            >
-              Hủy
-            </Button>
-            <Button 
-              type="button" 
-              className="bg-primary hover:bg-blue-600"
-              onClick={saveGroup}
-              disabled={groupName.trim() === '' || selectedMembers.length < 2}
-            >
-              {currentGroup ? 'Cập nhật' : 'Tạo nhóm'}
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="w-full sm:w-auto"
+                onClick={() => setIsGroupDialogOpen(false)}
+              >
+                Hủy
+              </Button>
+              <Button 
+                type="button" 
+                className="w-full sm:w-auto bg-primary hover:bg-blue-600"
+                onClick={saveGroup}
+                disabled={groupName.trim() === '' || selectedMembers.length < 2}
+              >
+                {currentGroup ? 'Cập nhật' : 'Tạo nhóm'}
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
